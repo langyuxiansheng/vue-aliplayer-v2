@@ -1,0 +1,34 @@
+{
+    "name": "vue-aliplayer-v2",
+    "version": "1.0.0",
+    "author": "yxs",
+    "description": "青出于蓝而胜于蓝,感谢每一位开源的开发者. 这是一个基于Alipayer 开发并封装成vue组件的播放器.",
+    "main":"lib/vue-aliplayer-v2.umd.min.js",
+    "private": false,
+    "license": "MIT",
+    "scripts": {
+        "dev": "vue-cli-service serve",
+        "build": "vue-cli-service build",
+        "lint": "vue-cli-service lint",
+        "lib": "vue-cli-service build --target lib --name vue-aliplayer-v2 --dest lib packages/index.js"
+    },
+    "dependencies": {
+        "core-js": "^2.6.5",
+        "vue": "^2.6.10"
+    },
+    "devDependencies": {
+        "@vue/cli-plugin-babel": "^3.8.0",
+        "@vue/cli-plugin-eslint": "^3.8.0",
+        "@vue/cli-service": "^3.8.0",
+        "babel-eslint": "^10.0.1",
+        "eslint": "^5.16.0",
+        "eslint-plugin-vue": "^5.0.0",
+        "less": "^3.9.0",
+        "less-loader": "^5.0.0",
+        "vue-template-compiler": "^2.6.10"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:langyuxiansheng/vue-aliplayer-v2.git"
+    }
+}
