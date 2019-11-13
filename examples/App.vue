@@ -1,8 +1,8 @@
 <template>
     <div id="app">
-        <VueAliplayerV2
-            ref="VueAliplayerV2"
-        />
+        <vue-aliplayer-v2 ref="VueAliplayerV2" id="player-1194076936807170050" :options="{source:'rtmp://182.145.195.238:1935/hls/1194076936807170050'}" />
+        <vue-aliplayer-v2 ref="VueAliplayerV2" id="player-1194076936807170051" :options="{source:'rtmp://182.145.195.238:1935/hls/1194076936807170051'}" />
+        <vue-aliplayer-v2 ref="VueAliplayerV2" id="player-1194076936807170052" :options="{source:'rtmp://182.145.195.238:1935/hls/1194076936807170052'}" />
         <button @click="play()">播放</button>
         <button @click="pause()">暂停</button>
         <button @click="replay()">重播</button>

@@ -1,5 +1,5 @@
 <template>
-    <div :id="config.id"></div>
+    <div :id="id"></div>
 </template>
 <script>
 export default {
@@ -10,18 +10,22 @@ export default {
             type: [Object],
             default: () => null
         },
-
+        id:{
+            required: false,
+            type: [String],
+            default: `player-${Date.parse(new Date())}`
+        }
     },
     data () {
         return {
             player: null,   //播放器实例
             config:{
-                id: `player-${Date.parse(new Date())}`,  //播放器的ID
+                id: null,  //播放器的ID
                 width: '100%',
                 autoplay: true,
-                isLive: true,
+                // isLive: true,
                 //支持播放地址播放,此播放优先级最高
-                source: 'rtmp://182.145.195.238:1935/hls/1194076936807170050',
+                // source: 'rtmp://182.145.195.238:1935/hls/1194076936807170050',
                 cssLink: 'https://g.alicdn.com/de/prismplayer/2.8.2/skins/default/aliplayer-min.css',
                 scriptSrc: 'https://g.alicdn.com/de/prismplayer/2.8.2/aliplayer-min.js',
             },
@@ -108,7 +112,9 @@ export default {
         };
     },
     mounted () {
-        this.init();
+        this.$nextTick(()=>{
+            this.init();
+        });
     },
     methods: {
 
@@ -118,18 +124,17 @@ export default {
          */
         init(){
             let load = true;
-            let scriptTag = document.getElementById(scriptID);
             const linkID = 'aliplayer-min-css';
             const scriptID = 'aliplayer-min-js';
             const head = document.getElementsByTagName('head');
             const html = document.getElementsByTagName('html');
+            let scriptTag = document.getElementById(scriptID);
             if(!document.getElementById(linkID)) {
                 const link = document.createElement('link');
                 link.href = this.config.cssLink;
                 link.setAttribute('id',linkID);
                 head[0].appendChild(link);
             }
-
             if(!scriptTag) {
                 scriptTag = document.createElement('script');
                 scriptTag.id = scriptID;
@@ -160,6 +165,7 @@ export default {
                        this.config[key] = options[key];
                     }
                 }
+                this.config.id = this.id;
                 this.player = new Aliplayer(this.config, function(player) {
                     console.log('播放器创建好了。',player);
                 });
