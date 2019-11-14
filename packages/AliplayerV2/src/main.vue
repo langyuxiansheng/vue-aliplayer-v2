@@ -111,12 +111,13 @@ export default {
             ],
         };
     },
-    // mounted () {
-    //     this.$nextTick(()=>{
-    //         this.init();
-    //     });
-    // },
+    mounted () {
+        this.$nextTick(()=>{
+            this.init();
+        });
+    },
     updated(){
+        //重载播放器
         this.$nextTick(()=>{
             this.init();
         });
