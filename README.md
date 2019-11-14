@@ -186,7 +186,7 @@ this.$refs.VueAliplayerV2.pause();
 可以参考 [播放器接口方法](https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1085.36fc6fc57WKZ5P#h2-u64ADu653Eu5668u63A5u53E32) 
 
 | 名称        | 参数   |  说明  |
-| :-   | :-:  | :-  |
+| :-   | :-  | :-  |
 | play  | - |   播放视频。    |
 | pause | - |   暂停视频。    |
 | replay | - |   重播视频。    |
