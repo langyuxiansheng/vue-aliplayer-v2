@@ -182,7 +182,6 @@ props:{
 | liveRetry   |   int  |   直播播放失败重试次数，默认5次   |
 
 ### 3.2 播放器方法
-2. 内置方法
 ```javascript
 // 暂停播放
 this.$refs.VueAliplayerV2.pause();
@@ -241,7 +240,7 @@ export default {
 }
 </script>
 ```
-可以参考 [播放器事件](https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1085.36fc6fc57WKZ5P#h2-u64ADu653Eu5668u4E8Bu4EF63) 
+可以参考 [播放器事件](https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1085.36fc6fc57WKZ5P#h2-u64ADu653Eu5668u4E8Bu4EF63)
 
 | 名称       |  说明  |
 | :-         | :-  |
