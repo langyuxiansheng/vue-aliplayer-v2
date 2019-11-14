@@ -111,7 +111,12 @@ export default {
             ],
         };
     },
-    mounted () {
+    // mounted () {
+    //     this.$nextTick(()=>{
+    //         this.init();
+    //     });
+    // },
+    updated(){
         this.$nextTick(()=>{
             this.init();
         });
