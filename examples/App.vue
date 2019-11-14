@@ -1,8 +1,7 @@
 <template>
     <div id="app">
-        <vue-aliplayer-v2 ref="VueAliplayerV2" id="player-1194076936807170050" :options="{source:'rtmp://182.145.195.238:1935/hls/1194076936807170050'}" />
+        <vue-aliplayer-v2 ref="VueAliplayerV2" id="player-1194076936807170050" :options="{source:'rtmp://182.145.195.238:1935/hls/1194076936807170053'}" />
         <vue-aliplayer-v2 ref="VueAliplayerV2" id="player-1194076936807170051" :options="{source:'rtmp://182.145.195.238:1935/hls/1194076936807170051'}" />
-        <vue-aliplayer-v2 ref="VueAliplayerV2" id="player-1194076936807170052" :options="{source:'rtmp://182.145.195.238:1935/hls/1194076936807170052'}" />
         <button @click="play()">播放</button>
         <button @click="pause()">暂停</button>
         <button @click="replay()">重播</button>
@@ -14,10 +13,6 @@ export default {
     data(){
         return {
             value: null,
-            options:{
-                isSign: true, //签名模式 [Boolean] 默认为非签名模式,有线框, 当设置为true的时候没有任何线框
-                isShowBorder: false, //是否显示边框 [可选]
-            },
             player: null
         }
     },
