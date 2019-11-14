@@ -1,6 +1,6 @@
 {
     "name": "vue-aliplayer-v2",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "author": "yxs",
     "description": "感谢每一位开源的开发者. 这是一个基于Alipayer 开发并封装成vue组件的播放器.",
     "main":"lib/vue-aliplayer-v2.umd.min.js",
