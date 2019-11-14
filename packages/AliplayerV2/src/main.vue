@@ -137,14 +137,16 @@ export default {
             let scriptTag = document.getElementById(scriptID);
             if(!document.getElementById(linkID)) {
                 const link = document.createElement('link');
+                link.type = 'text/css';
+                link.rel = 'stylesheet';
                 link.href = this.config.cssLink;
                 link.setAttribute('id',linkID);
                 head[0].appendChild(link);
             }
             if(!scriptTag) {
                 scriptTag = document.createElement('script');
-                scriptTag.id = scriptID;
                 scriptTag.type = "text/javascript";
+                scriptTag.id = scriptID;
                 scriptTag.src = this.config.scriptSrc;
                 html[0].appendChild(scriptTag);
             }
@@ -451,6 +453,14 @@ export default {
         isPreview(){
             console.log(`是否试看`);
             this.player.isPreview();
+        },
+
+        /**
+         * @param ev 事件名
+         * @param handle 回调方法
+         */
+        off(ev,handle){
+            this.player.off(ev,handle);
         }
     }
 };

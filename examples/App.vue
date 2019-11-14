@@ -1,19 +1,21 @@
 <template>
     <div id="app">
-        <vue-aliplayer-v2 ref="VueAliplayerV2" id="player-1194076936807170050" :options="{source:'rtmp://182.145.195.238:1935/hls/1194076936807170053'}" />
-        <vue-aliplayer-v2 ref="VueAliplayerV2" id="player-1194076936807170051" :options="{source:'rtmp://182.145.195.238:1935/hls/1194076936807170051'}" />
-        <button @click="play()">播放</button>
-        <button @click="pause()">暂停</button>
-        <button @click="replay()">重播</button>
-        <button @click="getCurrentTime()">播放时刻</button>
+        <vue-aliplayer-v2 ref="VueAliplayerV2" id="player-1194076936807170050" :options="options" />
+        <div class="player-btns">
+            <span @click="play()">播放</span>
+            <span @click="pause()">暂停</span>
+            <span @click="replay()">重播</span>
+            <span @click="getCurrentTime()">播放时刻</span>
+        </div>
     </div>
 </template>
 <script>
 export default {
     data(){
         return {
-            value: null,
-            player: null
+            options: {
+                source:'//player.alicdn.com/video/aliyunmedia.mp4'
+            }
         }
     },
 
@@ -42,23 +44,12 @@ export default {
     margin: 0;
     padding: 0;
 }
-.sign-canvas{
-    display: block;
-    margin: 0 auto;
-    border: 1px dashed #f00;
-}
-.view-image{
-    display: block;
-    margin: 20px auto;
-}
-.sign-btns{
+.player-btns{
     width: 800px;
     margin: 0 auto;
     display: flex;
     justify-content: space-between;
-    #clear,
-    #clear1,
-    #save {
+    span {
         margin: 0 auto;
         display: inline-block;
         padding: 5px 10px;
