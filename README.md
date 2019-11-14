@@ -303,9 +303,10 @@ npm run lint
 > 您有功能建议,或者bug反馈请留言.
 
 ## 8.感谢
+---
+- vue-aliplayer 的作者,项目地址:https://github.com/slacrey/vue-aliplayer
 
-> vue-aliplayer 的作者,项目地址:https://github.com/slacrey/vue-aliplayer
-> Alipayer 阿里云的开源播放器 https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1085.36fc6fc57WKZ5P#h2-u64ADu653Eu5668u4E8Bu4EF63
+- Alipayer 阿里云的开源播放器 https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1085.36fc6fc57WKZ5P#h2-u64ADu653Eu5668u4E8Bu4EF63
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
