@@ -199,8 +199,8 @@ this.$refs.VueAliplayerV2.pause();
 | replayByVidAndPlayAuth | vid：视频id,playauth：播放凭证 | 目前只支持H5播放器。暂不支持不同格式视频间的之间切换。暂不支持直播rtmp流切换。  |
 | replayByVidAndAuthInfo | 仅MPS用户时使用,参数顺序为：vid、accId、accSecret、stsToken、authInfo、domainRegion |  目前只支持H5播放器。暂不支持不同格式视频间的之间切换。暂不支持直播rtmp流切换。   |
 | setPlayerSize | w，h |  设置播放器大小w，h可分别为400px像素或60%百分比。chrome浏览器下flash播放器分别不能小于397x297。  |
-| setSpeed | speed | 手动设置播放的倍速，倍速播放仅H5支持。移动端可能会失效，比如android微信。倍速播放UI默认是开启的。如果自定义过skinLaout属性，需要添加speedButton项到数组里：
-{name：“speedButton”，align：“tr”，x：10，y：23}  |
+| setSpeed | speed | 手动设置播放的倍速，倍速播放仅H5支持。移动端可能会失效，比如android微信。倍速播放UI默认是开启的。如果自定义过skinLaout属性，需要添加speedButton项到数组里： |
+| > | > | {name：“speedButton”，align：“tr”，x：10，y：23} |
 | setSanpshotProperties | width：宽度,height：高度,rate：截图质量| 设置截图参数。 |
 | requestFullScreen | - | 播放器全屏，仅H5支持。  |
 | cancelFullScreen | - | 播放器退出全屏，iOS调用无效，仅H5支持。  |
