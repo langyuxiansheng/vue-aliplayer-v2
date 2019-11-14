@@ -1,5 +1,9 @@
 ## 感谢每一位开源的开发者. 这是一个基于Alipayer 开发并封装成vue组件的播放器.
-#### 假如此轮子对你有帮助,请顺手star一下吧.o(*￣︶￣*)o
+#### [本项目在线演示](https://langyuxiansheng.github.io/vue-aliplayer-v2/)
+#### [阿里云播放器在线演示](https://player.alicdn.com/aliplayer/index.html)
+
+> 假如此轮子对你有帮助,请顺手star一下吧.o(*￣︶￣*)o
+
 ## 1.安装使用! 下载安装npm包
 ```bash
 npm i vue-aliplayer-v2 --save
@@ -260,17 +264,14 @@ export default {
 | startSeek  |  开始拖拽，参数返回拖拽点的时间。  |
 | completeSeek  |  完成拖拽，参数返回拖拽点的时间。  |
 
-## [本项目在线演示](https://langyuxiansheng.github.io/vue-aliplayer-v2/)
-## [阿里云播放器在线演示](https://player.alicdn.com/aliplayer/index.html)
 ---
 ## 5. 图片展示
 
 ![图片1](https://github.com/langyuxiansheng/vue-aliplayer-v2/blob/master/images/p1.png)
 ![图片2](https://github.com/langyuxiansheng/vue-aliplayer-v2/blob/master/images/p2.png)
 ---
-## 如果您有什么好的建议请留言
 
-## 二次开发 下载项目
+## 6.二次开发 下载项目
 
 ```bash
 git clone https://github.com/langyuxiansheng/vue-aliplayer-v2.git
@@ -298,9 +299,14 @@ npm run build
 npm run lint
 ```
 
-## 缺陷 & 后期计划
+## 7.缺陷 & 后期计划
 
 > 您有功能建议,或者bug反馈请留言.
+
+## 8.感谢
+
+> vue-aliplayer 的作者,项目地址:https://github.com/slacrey/vue-aliplayer
+> Alipayer 阿里云的开源播放器 https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1085.36fc6fc57WKZ5P#h2-u64ADu653Eu5668u4E8Bu4EF63
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
