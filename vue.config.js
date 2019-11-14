@@ -11,5 +11,5 @@ module.exports = {
           filename: 'index.html'
         }
 	},
-	publicPath: process.env.NODE_ENV === "production" ? "/vue-sign-canvas" : "/"
+	publicPath: process.env.NODE_ENV === "production" ? "/vue-aliplayer-v2" : "/"
 }
