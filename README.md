@@ -22,8 +22,8 @@ Vue.use(VueAliplayerV2);
         <vue-aliplayer-v2 
             @ready="handleReady" 
             ref="VueAliplayerV2" 
-            id="player-1194076936807170080" 
-            :options="{source:'rtmp://118.114.10.238:1688/hls/1194076936807170080'}" />
+            id="player-1194076936807171180" 
+            :options="options" />
         <button @click="play()">播放</button>
         <button @click="pause()">暂停</button>
         <button @click="replay()">重播</button>
@@ -35,7 +35,7 @@ export default {
     data(){
         return {
             options: {  //配置项  
-                source:'rtmp://182.145.195.238:1935/hls/1194076936807170053'
+                source:'rtmp://182.112.15.258:1688/hls/1194076936807171180'
             }
         }
     },
