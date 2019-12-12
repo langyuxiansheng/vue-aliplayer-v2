@@ -1,11 +1,15 @@
 <template>
     <div id="app">
-        <vue-aliplayer-v2 ref="VueAliplayerV2" id="player-1194076936807170050" :options="options" />
+        <template v-if="show">
+            <vue-aliplayer-v2 ref="VueAliplayerV2" id="player-1194076936807170050" :options="options" />
+        </template>
+        <p class="remove-text" v-else>播放器已销毁!</p>
         <div class="player-btns">
             <span @click="play()">播放</span>
             <span @click="pause()">暂停</span>
             <span @click="replay()">重播</span>
             <span @click="getCurrentTime()">播放时刻</span>
+            <span @click="show = !show">{{ show ? '销毁' : '重载' }}</span>
         </div>
     </div>
 </template>
@@ -15,7 +19,8 @@ export default {
         return {
             options: {
                 source:'//player.alicdn.com/video/aliyunmedia.mp4'
-            }
+            },
+            show: true
         }
     },
 
@@ -35,7 +40,7 @@ export default {
 
         getCurrentTime(){
             this.$refs.VueAliplayerV2.getCurrentTime();
-        },
+        }
     }
 }
 </script>
@@ -44,11 +49,16 @@ export default {
     margin: 0;
     padding: 0;
 }
+.remove-text{
+    text-align: center;
+    padding: 20px;
+    font-size: 24px;
+}
 .player-btns{
-    width: 800px;
-    margin: 0 auto;
+    width: 100%;
     display: flex;
     justify-content: space-between;
+    flex-wrap: wrap;
     span {
         margin: 0 auto;
         display: inline-block;

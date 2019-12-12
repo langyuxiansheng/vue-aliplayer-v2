@@ -129,13 +129,13 @@ export default {
          * 加载Alipayer的SDK
          */
         init(){
-            let load = true;
             const linkID = 'aliplayer-min-css';
             const scriptID = 'aliplayer-min-js';
             const head = document.getElementsByTagName('head');
             const html = document.getElementsByTagName('html');
             let scriptTag = document.getElementById(scriptID);
-            if(!document.getElementById(linkID)) {
+            let linkIDTag = document.getElementById(linkID);
+            if(!linkIDTag) {
                 const link = document.createElement('link');
                 link.type = 'text/css';
                 link.rel = 'stylesheet';
@@ -151,13 +151,12 @@ export default {
                 html[0].appendChild(scriptTag);
             }
 
-            scriptTag.addEventListener("load", () => {
+            if(scriptTag && linkIDTag){
                 this.initPlayer();
-                load = false;
-            });
-
-            if(!load){
-                this.initPlayer();
+            } else {
+                scriptTag.addEventListener("load", () => {
+                    this.initPlayer();
+                });
             }
         },
 
@@ -174,9 +173,10 @@ export default {
                     }
                 }
                 this.config.id = this.id;
-                this.player = new Aliplayer(this.config, function(player) {
-                    console.log('播放器创建好了。',player);
-                });
+                // this.player = new Aliplayer(this.config, function(player) {
+                //     // console.log('播放器创建好了',player);
+                // });
+                this.player = new Aliplayer(this.config);
                 for(const ev in this.events){
                     this.player.on(this.events[ev],(e)=>{
                         // console.log(`object ${this.events[ev]}`,e);
