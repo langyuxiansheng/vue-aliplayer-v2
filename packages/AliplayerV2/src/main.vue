@@ -179,7 +179,7 @@ export default {
                 });
                 for(const ev in this.events){
                     this.player.on(this.events[ev],(e)=>{
-                        console.log(`object ${this.events[ev]}`,e);
+                        // console.log(`object ${this.events[ev]}`,e);
                         this.$emit(this.events[ev],e);
                     });
                 }
@@ -199,7 +199,7 @@ export default {
          * 播放视频。
          */
         play(){
-            console.log(`播放视频。`);
+            // console.log(`播放视频。`);
             this.player.play();
         },
 
@@ -207,7 +207,7 @@ export default {
          * 暂停视频
          */
         pause(){
-            console.log(`暂停视频`);
+            // console.log(`暂停视频`);
             this.player.pause();
         },
 
@@ -215,7 +215,7 @@ export default {
          * 重播视频
          */
         replay(){
-            console.log(`重播视频`);
+            // console.log(`重播视频`);
             this.player.replay();
         },
 
@@ -225,7 +225,7 @@ export default {
          * @return player
          */
         seek(time){
-            console.log(`跳转到某个时刻进行播放，time为${time}秒。`);
+            // console.log(`跳转到某个时刻进行播放，time为${time}秒。`);
             this.player.seek(time);
         },
 
@@ -234,7 +234,7 @@ export default {
          * @return player
          */
         getCurrentTime(){
-            console.log(`获取当前的播放时刻，返回的单位为${this.player.getCurrentTime()}秒。`);
+            // console.log(`获取当前的播放时刻，返回的单位为${this.player.getCurrentTime()}秒。`);
             return this.player.getCurrentTime();
         },
 
@@ -243,7 +243,7 @@ export default {
          * @return player
          */
         getDuration(){
-            console.log(`获取视频总时长，返回的单位为${this.player.getDuration()}秒。`);
+            // console.log(`获取视频总时长，返回的单位为${this.player.getDuration()}秒。`);
             return this.player.getDuration();
         },
 
@@ -252,7 +252,7 @@ export default {
          * @return player
          */
         getVolume(){
-            console.log(`获取当前的音量${this.player.getVolume()}。`);
+            // console.log(`获取当前的音量${this.player.getVolume()}。`);
             return this.player.getVolume();
         },
 
@@ -261,7 +261,7 @@ export default {
          * @return player
          */
         setVolume(v){
-            console.log(`设置音量，vol为${v}。`);
+            // console.log(`设置音量，vol为${v}。`);
             this.player.setVolume(v);
         },
 
@@ -271,7 +271,7 @@ export default {
          * @return player
          */
         loadByUrl(url, time){
-            console.log(`直接播放视频url${url}，time为${time}。`);
+            // console.log(`直接播放视频url${url}，time为${time}。`);
             this.player.loadByUrl(url, time);
         },
 
@@ -281,7 +281,7 @@ export default {
          * @param 播放凭证
          */
         replayByVidAndPlayAuth(vid, playauth){
-            console.log(`replayByVidAndPlayAuth vid${vid}，playauth为${playauth}。`);
+            // console.log(`replayByVidAndPlayAuth vid${vid}，playauth为${playauth}。`);
             this.player.replayByVidAndPlayAuth(vid, playauth);
         },
 
@@ -292,7 +292,7 @@ export default {
          * @description 仅MPS用户时使用 仅MPS用户时使用 参数顺序为：vid、accId、accSecret、stsToken、authInfo、domainRegion
          */
         replayByVidAndAuthInfo(vid, accId, accSecret, stsToken, authInfo, domainRegion){
-            console.log(`replayByVidAndAuthInfo 参数顺序为：vid、accId、accSecret、stsToken、authInfo、domainRegion`,vid, accId, accSecret, stsToken, authInfo, domainRegion);
+            // console.log(`replayByVidAndAuthInfo 参数顺序为：vid、accId、accSecret、stsToken、authInfo、domainRegion`,vid, accId, accSecret, stsToken, authInfo, domainRegion);
             this.player.replayByVidAndAuthInfo(vid, accId, accSecret, stsToken, authInfo, domainRegion);
         },
 
@@ -303,7 +303,7 @@ export default {
          * @description chrome浏览器下flash播放器分别不能小于397x297。
          */
         setPlayerSize(w, h){
-            console.log(`设置播放器大小 宽度:${w},高度:${h}`);
+            // console.log(`设置播放器大小 宽度:${w},高度:${h}`);
             this.player.setPlayerSize(w, h);
         },
 
@@ -315,7 +315,7 @@ export default {
          * @description {name：“speedButton”，align：“tr”，x：10，y：23}
          */
         setSpeed(speed){
-            console.log(`手动设置播放的倍速:${speed}`);
+            // console.log(`手动设置播放的倍速:${speed}`);
             this.player.setSpeed(speed);
         },
 
@@ -326,7 +326,7 @@ export default {
          * @param rate 截图质量
          */
         setSanpshotProperties(width, height, rate){
-            console.log(`设置截图参数:`,width, height, rate);
+            // console.log(`设置截图参数:`,width, height, rate);
             this.player.setSanpshotProperties(width, height, rate);
         },
 
@@ -334,7 +334,7 @@ export default {
          * 播放器全屏，仅H5支持。
          */
         requestFullScreen(){
-            console.log(`播放器全屏，仅H5支持`);
+            // console.log(`播放器全屏，仅H5支持`);
             this.player.fullscreenService && this.player.fullscreenService.requestFullScreen();
         },
 
@@ -342,7 +342,7 @@ export default {
          * 播放器退出全屏，iOS调用无效，仅H5支持。
          */
         cancelFullScreen(){
-            console.log(`播放器全屏，仅H5支持`);
+            // console.log(`播放器全屏，仅H5支持`);
             this.player.fullscreenService && this.player.fullscreenService.cancelFullScreen();
         },
 
@@ -350,7 +350,7 @@ export default {
          * 获取播放器全屏状态，仅H5支持。
          */
         getIsFullScreen(){
-            console.log(`获取播放器全屏状态，仅H5支持。`,this.player.fullscreenService && this.player.fullscreenService.getIsFullScreen());
+            // console.log(`获取播放器全屏状态，仅H5支持。`,this.player.fullscreenService && this.player.fullscreenService.getIsFullScreen());
             return this.player.fullscreenService && this.player.fullscreenService.getIsFullScreen();
         },
 
@@ -359,7 +359,7 @@ export default {
          * @returns init ready loading play pause playing waiting error ended
          */
         getStatus(){
-            console.log(`获取播放器状态，包含的值`,this.player.fullscreenService && this.player.fullscreenService.getStatus());
+            // console.log(`获取播放器状态，包含的值`,this.player.fullscreenService && this.player.fullscreenService.getStatus());
             return this.player.fullscreenService && this.player.fullscreenService.getStatus();
         },
 
@@ -370,7 +370,7 @@ export default {
          * @description 例子：player.liveShiftSerivce.setLiveTimeRange(“”，‘2018/01/04 20:00:00’)
          */
         setLiveTimeRange(beginTime, endTime){
-            console.log(`设置直播的开始时间:${beginTime},结束时间:${endTime}，开启直播时移功能时使用。`);
+            // console.log(`设置直播的开始时间:${beginTime},结束时间:${endTime}，开启直播时移功能时使用。`);
             this.player.liveShiftSerivce && this.player.liveShiftSerivce.setLiveTimeRange(beginTime, endTime);
         },
 
@@ -380,7 +380,7 @@ export default {
          * @description 例如: setRotate(90)。详情参见旋转和镜像。
          */
         setRotate(rotate){
-            console.log(`参数为旋转角度:${rotate}。`);
+            // console.log(`参数为旋转角度:${rotate}。`);
             this.player.setRotate(rotate);
         },
 
@@ -389,7 +389,7 @@ export default {
          * @return rotate 旋转角度
          */
         getRotate(){
-            console.log(`获取旋转角度:${this.player.getRotate()}`);
+            // console.log(`获取旋转角度:${this.player.getRotate()}`);
             return this.player.getRotate();
         },
 
@@ -399,7 +399,7 @@ export default {
          * @description 例如: setImage(‘horizon’)。详情参见旋转和镜像。
          */
         setImage(image){
-            console.log(`设置镜像:${image}。`);
+            // console.log(`设置镜像:${image}。`);
             this.player.setImage(image);
         },
 
@@ -407,7 +407,7 @@ export default {
          * 播放器销毁
          */
         dispose(){
-            console.log(`播放器销毁。`);
+            // console.log(`播放器销毁。`);
             this.player.dispose();
         },
 
@@ -416,7 +416,7 @@ export default {
          * @param cover 封面地址
          */
         setCover(cover){
-            console.log(`设置封面:${cover}`);
+            // console.log(`设置封面:${cover}`);
             this.player.setCover(cover);
         },
 
@@ -425,7 +425,7 @@ export default {
          * @param markers 设置打点数据
          */
         setProgressMarkers(markers){
-            console.log(`markers打点数据集合:${markers}`);
+            // console.log(`markers打点数据集合:${markers}`);
             this.player.setProgressMarkers(markers);
         },
 
@@ -434,7 +434,7 @@ export default {
          * @param time 试看时间
          */
         setPreviewTime(time){
-            console.log(`设置试看时间，单位为:${time}秒`);
+            // console.log(`设置试看时间，单位为:${time}秒`);
             this.player.setPreviewTime(time);
         },
 
@@ -443,7 +443,7 @@ export default {
          * @return rotate 旋转角度
          */
         getPreviewTime(){
-            console.log(`获取试看时间:${this.player.getPreviewTime()}`);
+            // console.log(`获取试看时间:${this.player.getPreviewTime()}`);
             return this.player.getPreviewTime();
         },
 
@@ -451,7 +451,7 @@ export default {
          * 是否试看
          */
         isPreview(){
-            console.log(`是否试看`);
+            // console.log(`是否试看`);
             this.player.isPreview();
         },
 
