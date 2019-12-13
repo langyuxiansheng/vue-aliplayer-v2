@@ -1,4 +1,6 @@
+# vue-alipayer-v2
 ## 感谢每一位开源的开发者. 这是一个基于Alipayer 开发并封装成vue组件的播放器.
+### vue中使用Alipayer,播放rtmp,m3u8,mp4视频
 #### [本项目在线演示](https://langyuxiansheng.github.io/vue-aliplayer-v2/)
 #### [阿里云播放器在线演示](https://player.alicdn.com/aliplayer/index.html)
 
