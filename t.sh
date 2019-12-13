@@ -33,3 +33,13 @@ echo "已推送gh-pages";
 git checkout master; 
 
 echo "切换回master";
+
+git add .;
+
+git commit -m "更新lib包";
+
+git pull;
+
+git push;
+
+echo "完成";
