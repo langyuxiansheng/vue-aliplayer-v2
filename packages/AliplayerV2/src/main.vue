@@ -14,6 +14,16 @@ export default {
             required: false,
             type: [String],
             default: `player-${Date.parse(new Date())}`
+        },
+        cssLink:{   //css版本源
+            required: false,
+            type: [String],
+            default: `https://g.alicdn.com/de/prismplayer/2.8.2/skins/default/aliplayer-min.css`
+        },
+        scriptSrc:{ //js版本源
+            required: false,
+            type: [String],
+            default: `https://g.alicdn.com/de/prismplayer/2.8.2/aliplayer-min.js`
         }
     },
     data () {
@@ -26,8 +36,6 @@ export default {
                 // isLive: true,
                 //支持播放地址播放,此播放优先级最高
                 // source: 'rtmp://182.145.195.238:1935/hls/1194076936807170050',
-                cssLink: 'https://g.alicdn.com/de/prismplayer/2.8.2/skins/default/aliplayer-min.css',
-                scriptSrc: 'https://g.alicdn.com/de/prismplayer/2.8.2/aliplayer-min.js',
             },
             events:[
                 /**
@@ -136,21 +144,22 @@ export default {
             let scriptTag = document.getElementById(scriptID);
             let linkIDTag = document.getElementById(linkID);
             if(!linkIDTag) {
+                // console.log('linkIDTag');
                 const link = document.createElement('link');
                 link.type = 'text/css';
                 link.rel = 'stylesheet';
-                link.href = this.config.cssLink;
-                link.setAttribute('id',linkID);
+                link.href = this.cssLink;
+                link.id = linkID;
                 head[0].appendChild(link);
             }
             if(!scriptTag) {
+                // console.log('scriptTag');
                 scriptTag = document.createElement('script');
                 scriptTag.type = "text/javascript";
                 scriptTag.id = scriptID;
-                scriptTag.src = this.config.scriptSrc;
+                scriptTag.src = this.scriptSrc;
                 html[0].appendChild(scriptTag);
             }
-
             if(scriptTag && linkIDTag){
                 this.initPlayer();
             } else {
@@ -165,6 +174,7 @@ export default {
          * @description SDK文档地址:https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1084.131d1c4cJT7o5Z
          */
         initPlayer(){
+            // console.log(`this.player`,this.player);
             if(typeof window.Aliplayer != 'undefined') {
                 const options = this.options;
                 if(options){
@@ -176,12 +186,18 @@ export default {
                 // this.player = new Aliplayer(this.config, function(player) {
                 //     // console.log('播放器创建好了',player);
                 // });
-                this.player = new Aliplayer(this.config);
-                for(const ev in this.events){
-                    this.player.on(this.events[ev],(e)=>{
-                        // console.log(`object ${this.events[ev]}`,e);
-                        this.$emit(this.events[ev],e);
-                    });
+                if(!this.player){
+                    // console.log(this.config);
+                    this.player = new Aliplayer(this.config);
+                    for(const ev in this.events){
+                        this.player.on(this.events[ev],(e)=>{
+                            // console.log(`object ${this.events[ev]}`,e);
+                            this.$emit(this.events[ev],e);
+                        });
+                    }
+                } else {
+                    this.player.replay();   //销毁后重播
+                    // console.log(`this.player.replay()`,'销毁后重播');
                 }
                 //通过播放器实例的off方法取消订阅
                 //player.off('ready',handleReady);

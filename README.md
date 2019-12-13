@@ -112,10 +112,22 @@ props:{
         type: [Object],
         default: () => null
     },
+    
     id:{  //播放器的ID 唯一标识符 不传就是默认的 但是有多个的时候不一定是唯一的
         required: false,
         type: [String],
         default: `player-${Date.parse(new Date())}`
+    },
+
+    cssLink:{   //css版本源
+        required: false,
+        type: [String],
+        default: `https://g.alicdn.com/de/prismplayer/2.8.2/skins/default/aliplayer-min.css`
+    },
+    scriptSrc:{ //js版本源
+        required: false,
+        type: [String],
+        default: `https://g.alicdn.com/de/prismplayer/2.8.2/aliplayer-min.js`
     }
 }
 ```
