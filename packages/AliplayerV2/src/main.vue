@@ -188,16 +188,16 @@ export default {
                 // });
                 if(!this.player){
                     // console.log(this.config);
-                    this.player = new Aliplayer(this.config);
+                    this.player = Aliplayer(this.config);
                     for(const ev in this.events){
-                        this.player.on(this.events[ev],(e)=>{
+                        this.player && this.player.on(this.events[ev],(e)=>{
                             // console.log(`object ${this.events[ev]}`,e);
                             this.$emit(this.events[ev],e);
                         });
                     }
                 } else {
-                    this.player.replay();   //销毁后重播
-                    // console.log(`this.player.replay()`,'销毁后重播');
+                    this.player && this.player.replay();   //销毁后重播
+                    // console.log(`this.player && this.player.replay()`,'销毁后重播');
                 }
                 //通过播放器实例的off方法取消订阅
                 //player.off('ready',handleReady);
@@ -216,7 +216,7 @@ export default {
          */
         play(){
             // console.log(`播放视频。`);
-            this.player.play();
+            this.player && this.player.play();
         },
 
         /**
@@ -224,7 +224,7 @@ export default {
          */
         pause(){
             // console.log(`暂停视频`);
-            this.player.pause();
+            this.player && this.player.pause();
         },
 
         /**
@@ -232,7 +232,7 @@ export default {
          */
         replay(){
             // console.log(`重播视频`);
-            this.player.replay();
+            this.player && this.player.replay();
         },
 
         /**
@@ -242,7 +242,7 @@ export default {
          */
         seek(time){
             // console.log(`跳转到某个时刻进行播放，time为${time}秒。`);
-            this.player.seek(time);
+            this.player && this.player.seek(time);
         },
 
         /**
@@ -250,8 +250,8 @@ export default {
          * @return player
          */
         getCurrentTime(){
-            // console.log(`获取当前的播放时刻，返回的单位为${this.player.getCurrentTime()}秒。`);
-            return this.player.getCurrentTime();
+            // console.log(`获取当前的播放时刻，返回的单位为${this.player && this.player.getCurrentTime()}秒。`);
+            return this.player && this.player.getCurrentTime();
         },
 
         /**
@@ -259,8 +259,8 @@ export default {
          * @return player
          */
         getDuration(){
-            // console.log(`获取视频总时长，返回的单位为${this.player.getDuration()}秒。`);
-            return this.player.getDuration();
+            // console.log(`获取视频总时长，返回的单位为${this.player && this.player.getDuration()}秒。`);
+            return this.player && this.player.getDuration();
         },
 
         /**
@@ -268,8 +268,8 @@ export default {
          * @return player
          */
         getVolume(){
-            // console.log(`获取当前的音量${this.player.getVolume()}。`);
-            return this.player.getVolume();
+            // console.log(`获取当前的音量${this.player && this.player.getVolume()}。`);
+            return this.player && this.player.getVolume();
         },
 
         /**
@@ -278,7 +278,7 @@ export default {
          */
         setVolume(v){
             // console.log(`设置音量，vol为${v}。`);
-            this.player.setVolume(v);
+            this.player && this.player.setVolume(v);
         },
 
         /**
@@ -288,7 +288,7 @@ export default {
          */
         loadByUrl(url, time){
             // console.log(`直接播放视频url${url}，time为${time}。`);
-            this.player.loadByUrl(url, time);
+            this.player && this.player.loadByUrl(url, time);
         },
 
         /**
@@ -298,7 +298,7 @@ export default {
          */
         replayByVidAndPlayAuth(vid, playauth){
             // console.log(`replayByVidAndPlayAuth vid${vid}，playauth为${playauth}。`);
-            this.player.replayByVidAndPlayAuth(vid, playauth);
+            this.player && this.player.replayByVidAndPlayAuth(vid, playauth);
         },
 
         /**
@@ -309,7 +309,7 @@ export default {
          */
         replayByVidAndAuthInfo(vid, accId, accSecret, stsToken, authInfo, domainRegion){
             // console.log(`replayByVidAndAuthInfo 参数顺序为：vid、accId、accSecret、stsToken、authInfo、domainRegion`,vid, accId, accSecret, stsToken, authInfo, domainRegion);
-            this.player.replayByVidAndAuthInfo(vid, accId, accSecret, stsToken, authInfo, domainRegion);
+            this.player && this.player.replayByVidAndAuthInfo(vid, accId, accSecret, stsToken, authInfo, domainRegion);
         },
 
         /**
@@ -320,7 +320,7 @@ export default {
          */
         setPlayerSize(w, h){
             // console.log(`设置播放器大小 宽度:${w},高度:${h}`);
-            this.player.setPlayerSize(w, h);
+            this.player && this.player.setPlayerSize(w, h);
         },
 
         /**
@@ -332,7 +332,7 @@ export default {
          */
         setSpeed(speed){
             // console.log(`手动设置播放的倍速:${speed}`);
-            this.player.setSpeed(speed);
+            this.player && this.player.setSpeed(speed);
         },
 
         /**
@@ -343,7 +343,7 @@ export default {
          */
         setSanpshotProperties(width, height, rate){
             // console.log(`设置截图参数:`,width, height, rate);
-            this.player.setSanpshotProperties(width, height, rate);
+            this.player && this.player.setSanpshotProperties(width, height, rate);
         },
 
         /**
@@ -351,7 +351,7 @@ export default {
          */
         requestFullScreen(){
             // console.log(`播放器全屏，仅H5支持`);
-            this.player.fullscreenService && this.player.fullscreenService.requestFullScreen();
+            this.player && this.player.fullscreenService && this.player.fullscreenService.requestFullScreen();
         },
 
         /**
@@ -359,15 +359,15 @@ export default {
          */
         cancelFullScreen(){
             // console.log(`播放器全屏，仅H5支持`);
-            this.player.fullscreenService && this.player.fullscreenService.cancelFullScreen();
+            this.player && this.player.fullscreenService && this.player.fullscreenService.cancelFullScreen();
         },
 
         /**
          * 获取播放器全屏状态，仅H5支持。
          */
         getIsFullScreen(){
-            // console.log(`获取播放器全屏状态，仅H5支持。`,this.player.fullscreenService && this.player.fullscreenService.getIsFullScreen());
-            return this.player.fullscreenService && this.player.fullscreenService.getIsFullScreen();
+            // console.log(`获取播放器全屏状态，仅H5支持。`,this.player && this.player.fullscreenService && this.player && this.player.fullscreenService.getIsFullScreen());
+            return this.player && this.player.fullscreenService && this.player.fullscreenService.getIsFullScreen();
         },
 
         /**
@@ -375,8 +375,8 @@ export default {
          * @returns init ready loading play pause playing waiting error ended
          */
         getStatus(){
-            // console.log(`获取播放器状态，包含的值`,this.player.fullscreenService && this.player.fullscreenService.getStatus());
-            return this.player.fullscreenService && this.player.fullscreenService.getStatus();
+            // console.log(`获取播放器状态，包含的值`,this.player && this.player.fullscreenService && this.player && this.player.fullscreenService.getStatus());
+            return this.player && this.player.fullscreenService && this.player.fullscreenService.getStatus();
         },
 
         /**
@@ -387,7 +387,7 @@ export default {
          */
         setLiveTimeRange(beginTime, endTime){
             // console.log(`设置直播的开始时间:${beginTime},结束时间:${endTime}，开启直播时移功能时使用。`);
-            this.player.liveShiftSerivce && this.player.liveShiftSerivce.setLiveTimeRange(beginTime, endTime);
+            this.player && this.player.liveShiftSerivce && this.player.liveShiftSerivce.setLiveTimeRange(beginTime, endTime);
         },
 
         /**
@@ -397,7 +397,7 @@ export default {
          */
         setRotate(rotate){
             // console.log(`参数为旋转角度:${rotate}。`);
-            this.player.setRotate(rotate);
+            this.player && this.player.setRotate(rotate);
         },
 
         /**
@@ -405,8 +405,8 @@ export default {
          * @return rotate 旋转角度
          */
         getRotate(){
-            // console.log(`获取旋转角度:${this.player.getRotate()}`);
-            return this.player.getRotate();
+            // console.log(`获取旋转角度:${this.player && this.player.getRotate()}`);
+            return this.player && this.player.getRotate();
         },
 
         /**
@@ -416,7 +416,7 @@ export default {
          */
         setImage(image){
             // console.log(`设置镜像:${image}。`);
-            this.player.setImage(image);
+            this.player && this.player.setImage(image);
         },
 
         /**
@@ -424,7 +424,7 @@ export default {
          */
         dispose(){
             // console.log(`播放器销毁。`);
-            this.player.dispose();
+            this.player && this.player.dispose();
         },
 
         /**
@@ -433,7 +433,7 @@ export default {
          */
         setCover(cover){
             // console.log(`设置封面:${cover}`);
-            this.player.setCover(cover);
+            this.player && this.player.setCover(cover);
         },
 
         /**
@@ -442,7 +442,7 @@ export default {
          */
         setProgressMarkers(markers){
             // console.log(`markers打点数据集合:${markers}`);
-            this.player.setProgressMarkers(markers);
+            this.player && this.player.setProgressMarkers(markers);
         },
 
         /**
@@ -451,7 +451,7 @@ export default {
          */
         setPreviewTime(time){
             // console.log(`设置试看时间，单位为:${time}秒`);
-            this.player.setPreviewTime(time);
+            this.player && this.player.setPreviewTime(time);
         },
 
         /**
@@ -459,8 +459,8 @@ export default {
          * @return rotate 旋转角度
          */
         getPreviewTime(){
-            // console.log(`获取试看时间:${this.player.getPreviewTime()}`);
-            return this.player.getPreviewTime();
+            // console.log(`获取试看时间:${this.player && this.player.getPreviewTime()}`);
+            return this.player && this.player.getPreviewTime();
         },
 
         /**
@@ -468,7 +468,7 @@ export default {
          */
         isPreview(){
             // console.log(`是否试看`);
-            this.player.isPreview();
+            this.player && this.player.isPreview();
         },
 
         /**
@@ -476,8 +476,12 @@ export default {
          * @param handle 回调方法
          */
         off(ev,handle){
-            this.player.off(ev,handle);
+            this.player && this.player.off(ev,handle);
         }
+    },
+    beforeDestroy(){  //防止重复创建,需要销毁原来的播放器
+        console.log('beforeDestroy');
+        this.player && this.player.dispose();
     }
 };
 </script>
