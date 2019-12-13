@@ -480,7 +480,7 @@ export default {
         }
     },
     beforeDestroy(){  //防止重复创建,需要销毁原来的播放器
-        console.log('beforeDestroy');
+        // console.log('beforeDestroy');
         this.player && this.player.dispose();
     }
 };
