@@ -159,13 +159,11 @@ export default {
                 scriptTag.id = scriptID;
                 scriptTag.src = this.scriptSrc;
                 html[0].appendChild(scriptTag);
-            }
-            if(scriptTag && linkIDTag){
-                this.initPlayer();
-            } else {
                 scriptTag.addEventListener("load", () => {
                     this.initPlayer();
                 });
+            } else {
+                this.initPlayer();
             }
         },
 
@@ -480,8 +478,12 @@ export default {
         }
     },
     beforeDestroy(){  //防止重复创建,需要销毁原来的播放器
-        // console.log('beforeDestroy');
         this.player && this.player.dispose();
+        const head = document.querySelector('head');    //移除所有的重复创建的标签
+        const nodes = document.querySelectorAll('script[src="https://g.alicdn.com/de/prismplayer/2.8.2/hls/aliplayer-hls-min.js"]');
+        head && nodes.forEach((item)=>{
+            head.removeChild(item);
+        });
     }
 };
 </script>
