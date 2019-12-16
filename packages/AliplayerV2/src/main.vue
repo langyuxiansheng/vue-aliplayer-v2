@@ -477,10 +477,7 @@ export default {
             this.player && this.player.off(ev,handle);
         }
     },
-    beforeDestroy(){  //防止重复创建,需要销毁原来的播放器
-        if(this.player && typeof this.player.dispose() === 'function'){
-            this.player.dispose();
-        }
+    beforeDestroy(){  //防止重复创建
         const head = document.querySelector('head');    //移除所有的重复创建的标签
         const nodes = document.querySelectorAll('script[src="https://g.alicdn.com/de/prismplayer/2.8.2/hls/aliplayer-hls-min.js"]');
         head && nodes.forEach((item)=>{
