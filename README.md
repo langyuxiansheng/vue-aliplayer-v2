@@ -12,11 +12,39 @@ npm i vue-aliplayer-v2 --save
 or
 yarn add vue-aliplayer-v2 
 ```
+
+#### 全局注册 main.js
+
 ```javascript
-//全局注册 main.js
 import VueAliplayerV2 from 'vue-aliplayer-v2';
 
 Vue.use(VueAliplayerV2);
+```
+
+#### 局部注册 App.vue
+```html
+<template>
+    <div id="app">
+        <vue-aliplayer-v2 
+            @ready="handleReady" 
+            ref="VueAliplayerV2" 
+            id="player-1194076936807171180" 
+            :options="options" />
+    </div>
+</template>
+<script>
+import VueAliplayerV2 from 'vue-aliplayer-v2';
+export default {
+    data(){
+        return {
+            options: {  //配置项  
+                source:'rtmp://182.112.15.258:1688/hls/1194076936807171180'
+            }
+        }
+    },
+    components:{ VueAliplayerV2: VueAliplayerV2.Player }
+}
+</script>
 ```
 
 ## 2.组件中使用
@@ -313,6 +341,7 @@ npm run lint
 ```
 
 ## 7.缺陷 & 后期计划
+> 2019年12月27日 更新优化局部引用方式
 
 > 您有功能建议,或者bug反馈请留言.
 
