@@ -14,7 +14,9 @@
     </div>
 </template>
 <script>
+// import VueAliplayerV2 from '../packages';
 export default {
+    // components:{ VueAliplayerV2: VueAliplayerV2.Player },
     data(){
         return {
             options: {
