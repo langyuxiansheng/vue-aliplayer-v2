@@ -10,6 +10,11 @@ export default {
             type: [Object],
             default: () => null
         },
+        source: {  //播放源(此属性存在则优先于options.source) 动态切换,目前只支持同种格式（mp4/flv/m3u8）之间切换。暂不支持直播rtmp流切换。
+            required: false,
+            type: [Object],
+            default: () => null
+        },
         id:{
             required: false,
             type: [String],
@@ -119,6 +124,11 @@ export default {
             ],
         };
     },
+    watch:{
+        source(url){ //监听播放源变化
+            this.loadByUrl(url);
+        }
+    },
     mounted () {
         this.$nextTick(()=>{
             this.init();
@@ -180,6 +190,7 @@ export default {
                        this.config[key] = options[key];
                     }
                 }
+                if(this.source) this.config.source = this.source; //播放源
                 this.config.id = this.id;
                 // this.player = new Aliplayer(this.config, function(player) {
                 //     // console.log('播放器创建好了',player);

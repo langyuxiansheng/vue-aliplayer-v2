@@ -22,29 +22,10 @@ Vue.use(VueAliplayerV2);
 ```
 
 #### 局部注册 App.vue
-```html
-<template>
-    <div id="app">
-        <vue-aliplayer-v2 
-            @ready="handleReady" 
-            ref="VueAliplayerV2" 
-            id="player-1194076936807171180" 
-            :options="options" />
-    </div>
-</template>
-<script>
+
+```javascript
 import VueAliplayerV2 from 'vue-aliplayer-v2';
-export default {
-    data(){
-        return {
-            options: {  //配置项  
-                source:'rtmp://182.112.15.258:1688/hls/1194076936807171180'
-            }
-        }
-    },
-    components:{ VueAliplayerV2: VueAliplayerV2.Player }
-}
-</script>
+components:{ VueAliplayerV2: VueAliplayerV2.Player }
 ```
 
 ## 2.组件中使用
@@ -53,32 +34,47 @@ export default {
 ```html
 <template>
     <div id="app">
-        <vue-aliplayer-v2 
-            @ready="handleReady" 
-            ref="VueAliplayerV2" 
-            id="player-1194076936807171180" 
-            :options="options" />
-        <button @click="play()">播放</button>
-        <button @click="pause()">暂停</button>
-        <button @click="replay()">重播</button>
-        <button @click="getCurrentTime()">播放时刻</button>
+        <template v-if="show">
+            <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" id="player-1194076936807170050" :options="options" />
+        </template>
+        <p class="remove-text" v-else>播放器已销毁!</p>
+        <div class="player-btns">
+            <span @click="play()">播放</span>
+            <span @click="pause()">暂停</span>
+            <span @click="replay()">重播</span>
+            <span @click="getCurrentTime()">播放时刻</span>
+            <span @click="show = !show">{{ show ? '销毁' : '重载' }}</span>
+        </div>
+        <div class="source-box">
+            <span class="source-label">选择播放源(支持动态切换):</span>
+            <select v-model="source" name="source" id="source">
+                <option value="//player.alicdn.com/video/aliyunmedia.mp4">播放源1</option>
+                <option value="//yunqivedio.alicdn.com/user-upload/nXPDX8AASx.mp4">播放源2</option>
+                <option value="//tbm-auth.alicdn.com/e7qHgLdugbzzKh2eW0J/kXTgBkjvNXcERYxh2PA@@hd_hq.mp4?auth_key=1584519814-0-0-fc98b2738f331ff015f7bf5c62394888">播放源3</option>
+            </select>
+        </div>
+        <div class="source-box">
+            <span class="source-label">输入播放源(支持动态切换):</span>
+            <input class="source-input" type="text" v-model="source">
+        </div>
     </div>
 </template>
 <script>
+// import VueAliplayerV2 from 'vue-aliplayer-v2';
 export default {
+    // components:{ VueAliplayerV2: VueAliplayerV2.Player },
     data(){
         return {
-            options: {  //配置项  
-                source:'rtmp://182.112.15.258:1688/hls/1194076936807171180'
-            }
+            options: {
+                source:'//player.alicdn.com/video/aliyunmedia.mp4'
+            },
+            source: '//player.alicdn.com/video/aliyunmedia.mp4',
+            show: true
         }
     },
+
     methods:{
 
-        /**
-         * 在这里需要注意的是  this.$refs 可能会返回是数组,或者对象,这个在用的时候需要注意一下.且因为是异步渲染dom,所以最好是在 this.$nextTick(()=>{ //todo }); 里面调用     
-         * 事件可以参考文档 https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1085.36fc6fc57WKZ5P#h2-u64ADu653Eu5668u4E8Bu4EF63
-         */
         play(){
             this.$refs.VueAliplayerV2.play()
         },
@@ -93,27 +89,25 @@ export default {
 
         getCurrentTime(){
             this.$refs.VueAliplayerV2.getCurrentTime();
-        },
-        
-        /**
-         * 播放器事件回调 
-         */
-        handleReady(e){
-            console.log(`ready`,e);
         }
     }
 }
 </script>
-<style lang="less" scoped>
+<style lang="less">
 * {
     margin: 0;
     padding: 0;
 }
+.remove-text{
+    text-align: center;
+    padding: 20px;
+    font-size: 24px;
+}
 .player-btns{
-    width: 800px;
-    margin: 0 auto;
+    width: 100%;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
+    flex-wrap: wrap;
     span {
         margin: 0 auto;
         display: inline-block;
@@ -125,17 +119,42 @@ export default {
         background: #e1e1e1;
         border-radius: 10px;
         text-align: center;
-        margin: 20px auto;
+        margin: 5px;
         cursor: pointer;
     }
 }
+.source-box{
+    padding: 5px 10px;
+    margin-bottom: 20px;
+    .source-label{
+        margin-right: 20px;
+        font-size: 16px;
+        display: block;
+    }
+    #source{
+        margin-top: 10px;
+    }
+    .source-input{
+        margin-top: 10px;
+        padding: 5px 10px;
+        width: 80%;
+        border: 1px solid #ccc;
+    }
+}
 </style>
+
 ```
 ## 3.功能与配置
 
 ```javascript
 props:{
-     options: {  //配置项 
+    options: {  //配置项 (options.source 不支持动态切换,需要动态切换请直接使用source)
+        required: false,
+        type: [Object],
+        default: () => null
+    },
+
+    source: {  //播放源(此属性存在则优先于options.source) 支持动态切换,目前只支持同种格式（mp4/flv/m3u8）之间切换。暂不支持直播rtmp流切换。
         required: false,
         type: [Object],
         default: () => null
@@ -353,3 +372,9 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+## 更新日志
+
+> v1.1.7 增加动态切换播放源(增加source属性)功能 感谢"wikimo"和"jieruian"两位网友的反馈建议.
+> v1.1.6 修复部分已知bug和优化局部的引用方式
+
