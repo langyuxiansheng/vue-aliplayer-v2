@@ -375,6 +375,9 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## 更新日志
 
+> v1.1.8 修复播放源(增加source属性类型错误),修复获取播放器状态 getStatus()方法报错, 感谢"kongjigu"网友的反馈.
+
 > v1.1.7 增加动态切换播放源(增加source属性)功能 感谢"wikimo"和"jieruian"两位网友的反馈建议.
+
 > v1.1.6 修复部分已知bug和优化局部的引用方式
 

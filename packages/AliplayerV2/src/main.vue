@@ -12,7 +12,7 @@ export default {
         },
         source: {  //播放源(此属性存在则优先于options.source) 动态切换,目前只支持同种格式（mp4/flv/m3u8）之间切换。暂不支持直播rtmp流切换。
             required: false,
-            type: [Object],
+            type: [String],
             default: () => null
         },
         id:{
@@ -385,7 +385,7 @@ export default {
          */
         getStatus(){
             // console.log(`获取播放器状态，包含的值`,this.player && this.player.fullscreenService && this.player && this.player.fullscreenService.getStatus());
-            return this.player && this.player.fullscreenService && this.player.fullscreenService.getStatus();
+            return this.player && this.player.getStatus();
         },
 
         /**

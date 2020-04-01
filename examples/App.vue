@@ -10,6 +10,7 @@
             <span @click="replay()">重播</span>
             <span @click="getCurrentTime()">播放时刻</span>
             <span @click="show = !show">{{ show ? '销毁' : '重载' }}</span>
+            <span @click="getStatus()">获取播放器状态</span>
         </div>
         <div class="source-box">
             <span class="source-label">选择播放源(支持动态切换):</span>
@@ -55,6 +56,12 @@ export default {
 
         getCurrentTime(){
             this.$refs.VueAliplayerV2.getCurrentTime();
+        },
+
+        getStatus(){
+           const status =  this.$refs.VueAliplayerV2.getStatus();
+           console.log(`getStatus:`, status);
+           alert(`getStatus:${status}`);
         }
     }
 }
