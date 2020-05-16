@@ -13,12 +13,12 @@ export default {
         source: {  //播放源(此属性存在则优先于options.source) 动态切换,目前只支持同种格式（mp4/flv/m3u8）之间切换。暂不支持直播rtmp流切换。
             required: false,
             type: [String],
-            default: () => null
+            default: null
         },
         id:{
             required: false,
             type: [String],
-            default: `player-${Date.parse(new Date())}`
+            default: `player-${Math.random().toString(36).substr(2).toLocaleUpperCase()}`
         },
         cssLink:{   //css版本源
             required: false,

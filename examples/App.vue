@@ -1,7 +1,7 @@
 <template>
     <div id="app">
         <template v-if="show">
-            <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" id="player-1194076936807170050" :options="options" />
+            <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" :options="options" />
         </template>
         <p class="remove-text" v-else>播放器已销毁!</p>
         <div class="player-btns">
