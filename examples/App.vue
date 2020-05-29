@@ -10,6 +10,7 @@
             <span @click="replay()">重播</span>
             <span @click="getCurrentTime()">播放时刻</span>
             <span @click="show = !show">{{ show ? '销毁' : '重载' }}</span>
+            <span @click="options.isLive = !options.isLive">{{ options.isLive ? '切换普通模式' : '切换直播模式' }}</span>
             <span @click="getStatus()">获取播放器状态</span>
         </div>
         <div class="source-box">
@@ -18,6 +19,7 @@
                 <option value="//player.alicdn.com/video/aliyunmedia.mp4">播放源1</option>
                 <option value="//yunqivedio.alicdn.com/user-upload/nXPDX8AASx.mp4">播放源2</option>
                 <option value="//tbm-auth.alicdn.com/e7qHgLdugbzzKh2eW0J/kXTgBkjvNXcERYxh2PA@@hd_hq.mp4?auth_key=1584519814-0-0-fc98b2738f331ff015f7bf5c62394888">播放源3</option>
+                <option value="//ivi.bupt.edu.cn/hls/cctv1.m3u8">直播播放源4</option>
             </select>
         </div>
         <div class="source-box">
@@ -33,9 +35,12 @@ export default {
     data(){
         return {
             options: {
-                source:'//player.alicdn.com/video/aliyunmedia.mp4'
+                // source:'//player.alicdn.com/video/aliyunmedia.mp4',
+                isLive: true,   //切换为直播流的时候必填
+                // format: 'm3u8'  //切换为直播流的时候必填
             },
             source: '//player.alicdn.com/video/aliyunmedia.mp4',
+            // source: '//ivi.bupt.edu.cn/hls/cctv1.m3u8',
             show: true
         }
     },
@@ -55,7 +60,8 @@ export default {
         },
 
         getCurrentTime(){
-            this.$refs.VueAliplayerV2.getCurrentTime();
+            // this.$refs.VueAliplayerV2.getCurrentTime();
+            this.source = 'http://ivi.bupt.edu.cn/hls/cctv1.m3u8';
         },
 
         getStatus(){
