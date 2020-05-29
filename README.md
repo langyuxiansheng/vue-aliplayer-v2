@@ -35,7 +35,7 @@ components:{ VueAliplayerV2: VueAliplayerV2.Player }
 <template>
     <div id="app">
         <template v-if="show">
-            <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" id="player-1194076936807170050" :options="options" />
+            <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" :options="options" />
         </template>
         <p class="remove-text" v-else>播放器已销毁!</p>
         <div class="player-btns">
@@ -44,6 +44,8 @@ components:{ VueAliplayerV2: VueAliplayerV2.Player }
             <span @click="replay()">重播</span>
             <span @click="getCurrentTime()">播放时刻</span>
             <span @click="show = !show">{{ show ? '销毁' : '重载' }}</span>
+            <span @click="options.isLive = !options.isLive">{{ options.isLive ? '切换普通模式' : '切换直播模式' }}</span>
+            <span @click="getStatus()">获取播放器状态</span>
         </div>
         <div class="source-box">
             <span class="source-label">选择播放源(支持动态切换):</span>
@@ -51,6 +53,7 @@ components:{ VueAliplayerV2: VueAliplayerV2.Player }
                 <option value="//player.alicdn.com/video/aliyunmedia.mp4">播放源1</option>
                 <option value="//yunqivedio.alicdn.com/user-upload/nXPDX8AASx.mp4">播放源2</option>
                 <option value="//tbm-auth.alicdn.com/e7qHgLdugbzzKh2eW0J/kXTgBkjvNXcERYxh2PA@@hd_hq.mp4?auth_key=1584519814-0-0-fc98b2738f331ff015f7bf5c62394888">播放源3</option>
+                <option value="//ivi.bupt.edu.cn/hls/cctv1.m3u8">直播播放源4</option>
             </select>
         </div>
         <div class="source-box">
@@ -374,6 +377,8 @@ npm run lint
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## 更新日志
+
+> v1.2.0 修复播放源(MP4/m3u8)之间切换无法正常播放的bug,增加options配置项动态响应功能,优化部分播放器的逻辑, 感谢"liyoro"网友的反馈和建议.
 
 > v1.1.9 修复播放源(修复prop:source类型验证报错), 感谢"hugo2017"和“nullF”网友的反馈.
 

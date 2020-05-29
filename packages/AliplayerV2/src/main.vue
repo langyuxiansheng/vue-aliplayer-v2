@@ -125,8 +125,15 @@ export default {
         };
     },
     watch:{
-        source(url){ //监听播放源变化
-            this.loadByUrl(url);
+        source(){ //监听播放源变化
+            this.init();
+        },
+
+        options:{   //配置项是对象,只能深度监听
+            handler(){
+               this.init();
+            },
+            deep:true
         }
     },
     mounted () {
@@ -192,21 +199,13 @@ export default {
                 }
                 if(this.source) this.config.source = this.source; //播放源
                 this.config.id = this.id;
-                // this.player = new Aliplayer(this.config, function(player) {
-                //     // console.log('播放器创建好了',player);
-                // });
-                if(!this.player){
-                    // console.log(this.config);
-                    this.player = Aliplayer(this.config);
-                    for(const ev in this.events){
-                        this.player && this.player.on(this.events[ev],(e)=>{
-                            // console.log(`object ${this.events[ev]}`,e);
-                            this.$emit(this.events[ev],e);
-                        });
-                    }
-                } else {
-                    this.player && this.player.replay();   //销毁后重播
-                    // console.log(`this.player && this.player.replay()`,'销毁后重播');
+                this.player && this.player.dispose();   //防止实例的重复
+                this.player = Aliplayer(this.config);
+                for(const ev in this.events){
+                    this.player && this.player.on(this.events[ev],(e)=>{
+                        // console.log(`object ${this.events[ev]}`,e);
+                        this.$emit(this.events[ev],e);
+                    });
                 }
                 //通过播放器实例的off方法取消订阅
                 //player.off('ready',handleReady);
