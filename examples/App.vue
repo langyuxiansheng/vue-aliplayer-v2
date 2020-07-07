@@ -1,9 +1,14 @@
 <template>
     <div id="app">
-        <template v-if="show">
-            <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" :options="options" />
+        <template v-if="!isShowMultiple && show">
+            <vue-aliplayer-v2 :source="source" ref="VueAliplayerV3" :options="options" />
         </template>
-        <p class="remove-text" v-else>播放器已销毁!</p>
+        <div v-if="isShowMultiple && show" class="show-multiple">
+            <template v-for="x in 5">
+                <vue-aliplayer-v2 class="multiple-player" :key="x" :source="source" ref="VueAliplayerV2" :options="options" />
+            </template>
+        </div>
+        <p class="remove-text" v-if="!show">播放器已销毁!</p>
         <div class="player-btns">
             <span @click="play()">播放</span>
             <span @click="pause()">暂停</span>
@@ -12,6 +17,7 @@
             <span @click="show = !show">{{ show ? '销毁' : '重载' }}</span>
             <span @click="options.isLive = !options.isLive">{{ options.isLive ? '切换普通模式' : '切换直播模式' }}</span>
             <span @click="getStatus()">获取播放器状态</span>
+            <span @click="showMultiple()">{{isShowMultiple ? '显示1个播放器' : '显示多个播放器'}}</span>
         </div>
         <div class="source-box">
             <span class="source-label">选择播放源(支持动态切换):</span>
@@ -41,7 +47,8 @@ export default {
             },
             source: '//player.alicdn.com/video/aliyunmedia.mp4',
             // source: '//ivi.bupt.edu.cn/hls/cctv1.m3u8',
-            show: true
+            show: true,
+            isShowMultiple: false
         }
     },
 
@@ -68,6 +75,10 @@ export default {
            const status =  this.$refs.VueAliplayerV2.getStatus();
            console.log(`getStatus:`, status);
            alert(`getStatus:${status}`);
+        },
+
+        showMultiple(){
+            this.isShowMultiple = !this.isShowMultiple;
         }
     }
 }
@@ -81,6 +92,13 @@ export default {
     text-align: center;
     padding: 20px;
     font-size: 24px;
+}
+.show-multiple{
+    display: flex;
+    .multiple-player{
+        width: calc(100% / 4);
+        margin: 20px;
+    }
 }
 .player-btns{
     width: 100%;
