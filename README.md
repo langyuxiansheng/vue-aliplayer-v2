@@ -378,6 +378,8 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## 更新日志
 
+> v1.2.1 修复直播播放的情况下,播放器已经销毁,而后台还在继续下载资源造成卡顿的bug,修复多个播放器只渲染1个的bug, 感谢"Jonauil"和"guangming95"两位网友的反馈和建议.
+
 > v1.2.0 修复播放源(MP4/m3u8)之间切换无法正常播放的bug,增加options配置项动态响应功能,优化部分播放器的逻辑, 感谢"liyoro"网友的反馈和建议.
 
 > v1.1.9 修复播放源(修复prop:source类型验证报错), 感谢"hugo2017"和“nullF”网友的反馈.

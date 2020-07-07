@@ -1,5 +1,5 @@
 <template>
-    <div :id="id"></div>
+    <div :id="config.id"></div>
 </template>
 <script>
 export default {
@@ -18,7 +18,7 @@ export default {
         id:{
             required: false,
             type: [String],
-            default: `player-${Math.random().toString(36).substr(2).toLocaleUpperCase()}`
+            default: null
         },
         cssLink:{   //css版本源
             required: false,
@@ -35,7 +35,7 @@ export default {
         return {
             player: null,   //播放器实例
             config:{
-                id: null,  //播放器的ID
+                id: `player-${Math.random().toString(36).substr(2).toLocaleUpperCase()}`,  //播放器的ID
                 width: '100%',
                 autoplay: true,
                 // isLive: true,
@@ -180,7 +180,10 @@ export default {
                     this.initPlayer();
                 });
             } else {
-                this.initPlayer();
+                this.initPlayer();  //这样是为了兼容页面上有多个播放器
+                scriptTag.addEventListener("load", () => {
+                    this.initPlayer();
+                });
             }
         },
 
@@ -189,7 +192,6 @@ export default {
          * @description SDK文档地址:https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1084.131d1c4cJT7o5Z
          */
         initPlayer(){
-            // console.log(`this.player`,this.player);
             if(typeof window.Aliplayer != 'undefined') {
                 const options = this.options;
                 if(options){
@@ -198,7 +200,7 @@ export default {
                     }
                 }
                 if(this.source) this.config.source = this.source; //播放源
-                this.config.id = this.id;
+                if(this.id) this.config.id = this.id
                 this.player && this.player.dispose();   //防止实例的重复
                 this.player = Aliplayer(this.config);
                 for(const ev in this.events){
@@ -488,6 +490,7 @@ export default {
         }
     },
     beforeDestroy(){  //防止重复创建
+        this.dispose(); //销毁播放器(防止直播播放的情况下,播放器已经销毁,而后台还在继续下载资源造成卡顿的bug)
         const head = document.querySelector('head');    //移除所有的重复创建的标签
         const nodes = document.querySelectorAll('script[src="https://g.alicdn.com/de/prismplayer/2.8.2/hls/aliplayer-hls-min.js"]');
         head && nodes.forEach((item)=>{
