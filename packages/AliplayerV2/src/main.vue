@@ -1,5 +1,5 @@
 <template>
-    <div :id="config.id"></div>
+    <div :id="playerId"></div>
 </template>
 <script>
 export default {
@@ -15,11 +15,11 @@ export default {
             type: [String],
             default: null
         },
-        id:{
-            required: false,
-            type: [String],
-            default: null
-        },
+        // id:{
+        //     required: false,
+        //     type: [String],
+        //     default: null
+        // },
         cssLink:{   //css版本源
             required: false,
             type: [String],
@@ -34,8 +34,9 @@ export default {
     data () {
         return {
             player: null,   //播放器实例
+            playerId: `player-${Math.random().toString(36).substr(2).toLocaleUpperCase()}`,
             config:{
-                id: `player-${Math.random().toString(36).substr(2).toLocaleUpperCase()}`,  //播放器的ID
+                id: null,  //播放器的ID
                 width: '100%',
                 autoplay: true,
                 // isLive: true,
@@ -200,7 +201,7 @@ export default {
                     }
                 }
                 if(this.source) this.config.source = this.source; //播放源
-                if(this.id) this.config.id = this.id
+                this.config.id = this.playerId; //赋值播放器容器id
                 this.player && this.player.dispose();   //防止实例的重复
                 this.player = Aliplayer(this.config);
                 for(const ev in this.events){

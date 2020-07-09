@@ -1,7 +1,7 @@
 <template>
     <div id="app">
         <template v-if="!isShowMultiple && show">
-            <vue-aliplayer-v2 :source="source" ref="VueAliplayerV3" :options="options" />
+            <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" :options="options" />
         </template>
         <div v-if="isShowMultiple && show" class="show-multiple">
             <template v-for="x in 5">
@@ -10,13 +10,15 @@
         </div>
         <p class="remove-text" v-if="!show">播放器已销毁!</p>
         <div class="player-btns">
-            <span @click="play()">播放</span>
-            <span @click="pause()">暂停</span>
-            <span @click="replay()">重播</span>
-            <span @click="getCurrentTime()">播放时刻</span>
+            <template v-if="!isShowMultiple && show">
+                <span @click="play()">播放</span>
+                <span @click="pause()">暂停</span>
+                <span @click="replay()">重播</span>
+                <span @click="getCurrentTime()">播放时刻</span>
+                <span @click="getStatus()">获取播放器状态</span>
+            </template>
             <span @click="show = !show">{{ show ? '销毁' : '重载' }}</span>
             <span @click="options.isLive = !options.isLive">{{ options.isLive ? '切换普通模式' : '切换直播模式' }}</span>
-            <span @click="getStatus()">获取播放器状态</span>
             <span @click="showMultiple()">{{isShowMultiple ? '显示1个播放器' : '显示多个播放器'}}</span>
         </div>
         <div class="source-box">
