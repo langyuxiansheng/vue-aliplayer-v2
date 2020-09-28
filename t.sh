@@ -1,3 +1,7 @@
+echo "设置 npm config set registry http://registry.npmjs.org"
+
+npm config set registry http://registry.npmjs.org
+
 echo "打包 => dist";
 
 # 打包 => dist
@@ -12,6 +16,10 @@ echo "推送到npmjs";
 
 #推送到npmjs
 npm publish;
+
+echo "设置 npm config set registry https://registry.npm.taobao.org"
+
+npm config set registry https://registry.npm.taobao.org
 
 # 更新gh-pages
 echo "更新gh-pages";
@@ -33,18 +41,3 @@ git push origin -d gh-pages;
 git subtree push --prefix dist origin gh-pages;
 
 echo "已推送gh-pages";
-
-# 推送完成后切换回master
-git checkout master; 
-
-echo "切换回master";
-
-git add .;
-
-git commit -m "更新lib包";
-
-git pull;
-
-git push;
-
-echo "完成";
