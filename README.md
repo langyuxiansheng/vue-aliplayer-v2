@@ -24,8 +24,14 @@ Vue.use(VueAliplayerV2);
 #### 局部注册 App.vue
 
 ```javascript
+
+//推荐第一种(仅v1.2.3)及以上的版本可用
 import VueAliplayerV2 from 'vue-aliplayer-v2';
+components:{ VueAliplayerV2 }
+
+//或者 
 components:{ VueAliplayerV2: VueAliplayerV2.Player }
+
 ```
 
 ## 2.组件中使用
@@ -65,7 +71,7 @@ components:{ VueAliplayerV2: VueAliplayerV2.Player }
 <script>
 // import VueAliplayerV2 from 'vue-aliplayer-v2';
 export default {
-    // components:{ VueAliplayerV2: VueAliplayerV2.Player },
+    // components:{ VueAliplayerV2 },
     data(){
         return {
             options: {
@@ -378,6 +384,8 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## 更新日志
 
+> v1.2.3 优化播放器的初始化代码,调整包内结构,优化局部组件的注册方式,也兼容老版本的引用方式.文档部分更新,增加了问题栏. 感谢"liangzhiyuan2015"和"fancheur"两位网友的反馈与建议.
+
 > v1.2.2 修复指定id情况下,播放器报错"没有为播放器指定容器",目前移除外部指定id的方式,所有的播放器id都由内部生成,不再由外部指定容器(外部指定的意义并不大),其它的说明:更新1.2.1后报错Uncaught TypeError: 没有为播放器指定容器,因为源码中变更了部分代码,以及最大限度的简化代码,组件内部的根容器就只有一个div容器,导致以前外部指定id的时候,容器id与外部的不一致,导致抛出异常了,现在已经紧急修复了,若在使用,请更新到v1.2.2的版本;如果使用了外部指定id的方式请移除外部的id.否则id会出现重复的情况., 感谢"liyoro"的反馈和建议.
 
 > v1.2.1 修复直播播放的情况下,播放器已经销毁,而后台还在继续下载资源造成卡顿的bug,修复多个播放器只渲染1个的bug, 感谢"Jonauil"和"guangming95"两位网友的反馈和建议.
@@ -392,3 +400,16 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 > v1.1.6 修复部分已知bug和优化局部的引用方式
 
+---
+## 其它问题
+
+1. IOS 或者其它设备无法全屏播放,或者点击全屏按钮的时候也只是显示竖屏？
+
+> 方案与问题所在: 
+
+一般情况下可能是开启了强制竖屏(也就是屏幕锁定)打开后就会竖屏而不会全屏了！如下关闭就可以了：
+参考issues: https://github.com/langyuxiansheng/vue-aliplayer-v2/issues/25
+
+-开启了屏幕锁定，只要上拉控制中心，点击屏幕锁定关闭就可以了！
+
+-也可能是播放器或者浏览器兼容性问题.

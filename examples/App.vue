@@ -39,7 +39,7 @@
 <script>
 // import VueAliplayerV2 from '../packages';
 export default {
-    // components:{ VueAliplayerV2: VueAliplayerV2.Player },
+    // components:{ VueAliplayerV2 },
     data(){
         return {
             options: {

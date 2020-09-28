@@ -182,9 +182,6 @@ export default {
                 });
             } else {
                 this.initPlayer();  //这样是为了兼容页面上有多个播放器
-                scriptTag.addEventListener("load", () => {
-                    this.initPlayer();
-                });
             }
         },
 
