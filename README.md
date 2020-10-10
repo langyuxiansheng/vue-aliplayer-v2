@@ -40,18 +40,26 @@ components:{ VueAliplayerV2: VueAliplayerV2.Player }
 ```html
 <template>
     <div id="app">
-        <template v-if="show">
+        <template v-if="!isShowMultiple && show">
             <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" :options="options" />
         </template>
-        <p class="remove-text" v-else>播放器已销毁!</p>
+        <div v-if="isShowMultiple && show" class="show-multiple">
+            <template v-for="x in 5">
+                <vue-aliplayer-v2 class="multiple-player" :key="x" :source="source" ref="VueAliplayerV2" :options="options" />
+            </template>
+        </div>
+        <p class="remove-text" v-if="!show">播放器已销毁!</p>
         <div class="player-btns">
-            <span @click="play()">播放</span>
-            <span @click="pause()">暂停</span>
-            <span @click="replay()">重播</span>
-            <span @click="getCurrentTime()">播放时刻</span>
+            <template v-if="!isShowMultiple && show">
+                <span @click="play()">播放</span>
+                <span @click="pause()">暂停</span>
+                <span @click="replay()">重播</span>
+                <span @click="getCurrentTime()">播放时刻</span>
+                <span @click="getStatus()">获取播放器状态</span>
+            </template>
             <span @click="show = !show">{{ show ? '销毁' : '重载' }}</span>
             <span @click="options.isLive = !options.isLive">{{ options.isLive ? '切换普通模式' : '切换直播模式' }}</span>
-            <span @click="getStatus()">获取播放器状态</span>
+            <span @click="showMultiple()">{{isShowMultiple ? '显示1个播放器' : '显示多个播放器'}}</span>
         </div>
         <div class="source-box">
             <span class="source-label">选择播放源(支持动态切换):</span>
@@ -69,16 +77,18 @@ components:{ VueAliplayerV2: VueAliplayerV2.Player }
     </div>
 </template>
 <script>
-// import VueAliplayerV2 from 'vue-aliplayer-v2';
 export default {
-    // components:{ VueAliplayerV2 },
     data(){
         return {
             options: {
-                source:'//player.alicdn.com/video/aliyunmedia.mp4'
+                // source:'//player.alicdn.com/video/aliyunmedia.mp4',
+                isLive: true,   //切换为直播流的时候必填
+                // format: 'm3u8'  //切换为直播流的时候必填
             },
             source: '//player.alicdn.com/video/aliyunmedia.mp4',
-            show: true
+            // source: '//ivi.bupt.edu.cn/hls/cctv1.m3u8',
+            show: true,
+            isShowMultiple: false
         }
     },
 
@@ -97,7 +107,18 @@ export default {
         },
 
         getCurrentTime(){
-            this.$refs.VueAliplayerV2.getCurrentTime();
+            // this.$refs.VueAliplayerV2.getCurrentTime();
+            this.source = 'http://ivi.bupt.edu.cn/hls/cctv1.m3u8';
+        },
+
+        getStatus(){
+           const status =  this.$refs.VueAliplayerV2.getStatus();
+           console.log(`getStatus:`, status);
+           alert(`getStatus:${status}`);
+        },
+
+        showMultiple(){
+            this.isShowMultiple = !this.isShowMultiple;
         }
     }
 }
@@ -111,6 +132,13 @@ export default {
     text-align: center;
     padding: 20px;
     font-size: 24px;
+}
+.show-multiple{
+    display: flex;
+    .multiple-player{
+        width: calc(100% / 4);
+        margin: 20px;
+    }
 }
 .player-btns{
     width: 100%;
@@ -167,12 +195,6 @@ props:{
         required: false,
         type: [Object],
         default: () => null
-    },
-    
-    id:{  //播放器的ID 唯一标识符 不传就是默认的 但是有多个的时候不一定是唯一的
-        required: false,
-        type: [String],
-        default: `player-${Date.parse(new Date())}`
     },
 
     cssLink:{   //css版本源
