@@ -177,12 +177,13 @@ export default {
                 scriptTag.id = scriptID;
                 scriptTag.src = this.scriptSrc;
                 html[0].appendChild(scriptTag);
-                scriptTag.addEventListener("load", () => {
-                    this.initPlayer();
-                });
             } else {
                 this.initPlayer();  //这样是为了兼容页面上有多个播放器
             }
+            //兼容单页加载和硬加载
+            scriptTag.addEventListener("load", () => {
+                this.initPlayer();
+            });
         },
 
         /**
