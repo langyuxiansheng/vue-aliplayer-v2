@@ -19,6 +19,12 @@ yarn add vue-aliplayer-v2
 import VueAliplayerV2 from 'vue-aliplayer-v2';
 
 Vue.use(VueAliplayerV2);
+
+//可选全局配置
+//Vue.use(VueAliplayerV2,{
+    // cssLink: 'https://g.alicdn.com/de/prismplayer/2.8.2/skins/default/aliplayer-min.css',
+    // scriptSrc: 'https://g.alicdn.com/de/prismplayer/2.8.2/aliplayer-min.js'
+//});
 ```
 
 #### 局部注册 App.vue
@@ -200,12 +206,12 @@ props:{
     cssLink:{   //css版本源
         required: false,
         type: [String],
-        default: `https://g.alicdn.com/de/prismplayer/2.8.2/skins/default/aliplayer-min.css`
+        default: `https://g.alicdn.com/de/prismplayer/2.9.0/skins/default/aliplayer-min.css`
     },
     scriptSrc:{ //js版本源
         required: false,
         type: [String],
-        default: `https://g.alicdn.com/de/prismplayer/2.8.2/aliplayer-min.js`
+        default: `https://g.alicdn.com/de/prismplayer/2.9.0/aliplayer-min.js`
     }
 }
 ```
@@ -405,6 +411,8 @@ npm run lint
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## 更新日志
+
+> v1.2.5 更换默认的播放器SDK版本2.8.2 => 2.9.0,2.8.2的版本存在多个播放器同时播放直播流异常的bug,增加了全局SDK版本配置,可以在Vue.use()的时候进行配置.
 
 > v1.2.4 修复多个播放器加载,只初始化一个播放器的bug.文档部分更新,增加了问题栏. 感谢"沙洲ad"的反馈与建议.
 
