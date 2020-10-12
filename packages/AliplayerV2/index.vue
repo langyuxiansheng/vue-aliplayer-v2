@@ -15,20 +15,15 @@ export default {
             type: [String],
             default: null
         },
-        // id:{
-        //     required: false,
-        //     type: [String],
-        //     default: null
-        // },
         cssLink:{   //css版本源
             required: false,
             type: [String],
-            default: `https://g.alicdn.com/de/prismplayer/2.8.2/skins/default/aliplayer-min.css`
+            default: `https://g.alicdn.com/de/prismplayer/2.9.0/skins/default/aliplayer-min.css`
         },
         scriptSrc:{ //js版本源
             required: false,
             type: [String],
-            default: `https://g.alicdn.com/de/prismplayer/2.8.2/aliplayer-min.js`
+            default: `https://g.alicdn.com/de/prismplayer/2.9.0/aliplayer-min.js`
         }
     },
     data () {
