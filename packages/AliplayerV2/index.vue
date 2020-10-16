@@ -150,8 +150,8 @@ export default {
          * 加载Alipayer的SDK
          */
         init(){
-            const linkID = 'aliplayer-min-css';
-            const scriptID = 'aliplayer-min-js';
+            const linkID = 'app__aliplayer-min-css';
+            const scriptID = 'app__aliplayer-min-js';
             const head = document.getElementsByTagName('head');
             const html = document.getElementsByTagName('html');
             let scriptTag = document.getElementById(scriptID);
@@ -163,6 +163,7 @@ export default {
                 link.rel = 'stylesheet';
                 link.href = this.cssLink;
                 link.id = linkID;
+                // link.className = linkID;
                 head[0].appendChild(link);
             }
             if(!scriptTag) {
@@ -170,6 +171,7 @@ export default {
                 scriptTag = document.createElement('script');
                 scriptTag.type = "text/javascript";
                 scriptTag.id = scriptID;
+                // scriptTag.className = scriptID;
                 scriptTag.src = this.scriptSrc;
                 html[0].appendChild(scriptTag);
             } else {
@@ -485,11 +487,16 @@ export default {
     },
     beforeDestroy(){  //防止重复创建
         this.dispose(); //销毁播放器(防止直播播放的情况下,播放器已经销毁,而后台还在继续下载资源造成卡顿的bug)
-        const head = document.querySelector('head');    //移除所有的重复创建的标签
-        const nodes = document.querySelectorAll('script[src="https://g.alicdn.com/de/prismplayer/2.8.2/hls/aliplayer-hls-min.js"]');
-        head && nodes.forEach((item)=>{
-            head.removeChild(item);
-        });
+        // const head = document.querySelector('head');
+        // const cssNodes = document.querySelectorAll(`link.app__aliplayer-min-css`);
+        // (html && cssNodes.length > 1) && cssNodes.forEach((item, index)=>{
+        //     if(index != 0) head.removeChild(item);
+        // });
+        // const html = document.querySelector('html');
+        // const jsNodes = document.querySelectorAll(`script.app__aliplayer-min-js`);
+        // (html && jsNodes.length > 1) && jsNodes.forEach((item, index)=>{
+        //     if(index != 0) html.removeChild(item);
+        // });
     }
 };
 </script>
