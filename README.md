@@ -412,6 +412,8 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## 更新日志
 
+> v1.2.7 更换底层默认sdk版本为2.9.1的版本.
+
 > v1.2.6 优化beforeDestroy() 部分的代码.
 
 > v1.2.5 更换默认的播放器SDK版本2.8.2 => 2.9.0,2.8.2的版本存在多个播放器同时播放直播流异常的bug,增加了全局SDK版本配置,可以在Vue.use()的时候进行配置.

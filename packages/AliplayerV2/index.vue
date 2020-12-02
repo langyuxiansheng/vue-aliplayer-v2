@@ -18,12 +18,12 @@ export default {
         cssLink:{   //css版本源
             required: false,
             type: [String],
-            default: `https://g.alicdn.com/de/prismplayer/2.9.0/skins/default/aliplayer-min.css`
+            default: `https://g.alicdn.com/de/prismplayer/2.9.1/skins/default/aliplayer-min.css`
         },
         scriptSrc:{ //js版本源
             required: false,
             type: [String],
-            default: `https://g.alicdn.com/de/prismplayer/2.9.0/aliplayer-min.js`
+            default: `https://g.alicdn.com/de/prismplayer/2.9.1/aliplayer-min.js`
         }
     },
     data () {
