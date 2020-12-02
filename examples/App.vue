@@ -34,6 +34,20 @@
             <span class="source-label">输入播放源(支持动态切换):</span>
             <input class="source-input" type="text" v-model="source">
         </div>
+        <div class="source-box">
+            <span class="source-label">指定为flash:</span>
+              <select v-model="options.useFlashPrism">
+                <option :value="true">是</option>
+                <option :value="false">否</option>
+            </select>
+        </div>
+        <div class="source-box">
+            <span class="source-label">禁止用户拖动(仅flash有效):</span>
+              <select v-model="options.disableSeek">
+                <option :value="true">是</option>
+                <option :value="false">否</option>
+            </select>
+        </div>
     </div>
 </template>
 <script>
@@ -44,13 +58,14 @@ export default {
         return {
             options: {
                 // source:'//player.alicdn.com/video/aliyunmedia.mp4',
-                isLive: true,   //切换为直播流的时候必填
-                // format: 'm3u8'  //切换为直播流的时候必填
+                isLive: !true,   //切换为直播流的时候必填
+                useFlashPrism: false,    //指定为flash
+                disableSeek: true //禁用进度条的Seek，默认值为false
             },
             source: '//player.alicdn.com/video/aliyunmedia.mp4',
             // source: '//ivi.bupt.edu.cn/hls/cctv1.m3u8',
             show: true,
-            isShowMultiple: false
+            isShowMultiple: false,
         }
     },
 
@@ -124,7 +139,7 @@ export default {
 }
 .source-box{
     padding: 5px 10px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     .source-label{
         margin-right: 20px;
         font-size: 16px;
