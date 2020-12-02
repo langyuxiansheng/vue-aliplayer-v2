@@ -412,7 +412,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## 更新日志
 
-> v1.2.7 更换底层默认sdk版本为2.9.1的版本.
+> v1.2.7 更换底层默认sdk版本为2.9.1的版本. 更新线上演示demo的选项
 
 > v1.2.6 优化beforeDestroy() 部分的代码.
 
