@@ -125,7 +125,19 @@ export default {
 
         showMultiple(){
             this.isShowMultiple = !this.isShowMultiple;
+        },
+
+       watch: {
+            source: {
+                handler() {
+                    this.show = !this.show
+                    setTimeout(()=>{   //设置延迟执行
+                        this.show = !this.show
+                    },1);
+                }
+            }
         }
+
     }
 }
 </script>
