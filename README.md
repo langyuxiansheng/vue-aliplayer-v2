@@ -424,7 +424,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## 更新日志
 
-> v1.2.7 更换底层默认sdk版本为2.9.1的版本. 更新线上演示demo的选项
+> v1.2.7 更换底层默认sdk版本为2.9.1的版本. 更新线上演示demo的选项，感谢网友“Ghost23333”的demo
 
 > v1.2.6 优化beforeDestroy() 部分的代码.
 
@@ -461,3 +461,17 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 -开启了屏幕锁定，只要上拉控制中心，点击屏幕锁定关闭就可以了！
 
 -也可能是播放器或者浏览器兼容性问题.
+
+2. 关于直播视频切换的问题，可以参考：
+```javascript
+ watch: {
+    source: {
+        handler() {
+            this.show = !this.show
+            setTimeout(()=>{   //直播视频切换的问题，设置延迟执行
+                this.show = !this.show
+            },1);
+        }
+    }
+}
+```
