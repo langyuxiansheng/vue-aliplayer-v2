@@ -1,5 +1,5 @@
 # vue-alipayer-v2
-## 感谢每一位开源的开发者. 这是一个基于Alipayer 开发并封装成vue组件的播放器.
+## 感谢每一位支持开源的朋友. 这是一个基于Alipayer 开发并封装成vue组件的播放器.
 ### vue中使用Alipayer,播放rtmp,m3u8,mp4视频
 #### [本项目在线演示](https://langyuxiansheng.github.io/vue-aliplayer-v2/)
 #### [阿里云播放器在线演示](https://player.alicdn.com/aliplayer/index.html)
@@ -422,7 +422,9 @@ npm run lint
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
-## 更新日志
+## 更新日志 
+
+> v1.2.8  更换底层默认sdk版本为2.9.3 修复options 遇到 update loop 错误 感谢"litmonw"网友的反馈与建议.
 
 > v1.2.7 更换底层默认sdk版本为2.9.1的版本. 更新线上演示demo的选项，感谢网友“Ghost23333”的demo
 

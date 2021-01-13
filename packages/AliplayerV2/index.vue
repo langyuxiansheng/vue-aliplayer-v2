@@ -18,12 +18,12 @@ export default {
         cssLink:{   //css版本源
             required: false,
             type: [String],
-            default: `https://g.alicdn.com/de/prismplayer/2.9.1/skins/default/aliplayer-min.css`
+            default: `https://g.alicdn.com/de/prismplayer/2.9.3/skins/default/aliplayer-min.css`
         },
         scriptSrc:{ //js版本源
             required: false,
             type: [String],
-            default: `https://g.alicdn.com/de/prismplayer/2.9.1/aliplayer-min.js`
+            default: `https://g.alicdn.com/de/prismplayer/2.9.3/aliplayer-min.js`
         }
     },
     data () {
@@ -34,6 +34,8 @@ export default {
                 id: null,  //播放器的ID
                 width: '100%',
                 autoplay: true,
+                skinLayout: false,
+                progressMarkers: false
                 // isLive: true,
                 //支持播放地址播放,此播放优先级最高
                 // source: 'rtmp://182.145.195.238:1935/hls/1194076936807170050',
@@ -127,9 +129,9 @@ export default {
 
         options:{   //配置项是对象,只能深度监听
             handler(){
-               this.init();
+                this.init();
             },
-            deep:true
+            deep: true
         }
     },
     mounted () {
@@ -189,10 +191,10 @@ export default {
          */
         initPlayer(){
             if(typeof window.Aliplayer != 'undefined') {
-                const options = this.options;
+                const options = this.deepCloneObject(this.options);
                 if(options){
                     for (const key in options) {
-                       this.config[key] = options[key];
+                        this.config[key] = options[key];
                     }
                 }
                 if(this.source) this.config.source = this.source; //播放源
@@ -483,7 +485,31 @@ export default {
          */
         off(ev,handle){
             this.player && this.player.off(ev,handle);
+        },
+
+
+        /**
+         * 深度拷贝
+         * @param {*} obj
+         */
+        deepCloneObject (obj) {
+            let objClone = Array.isArray(obj) ? [] : {};
+            if (obj && typeof obj === 'object') {
+                for (let key in obj) {
+                    if (obj.hasOwnProperty(key)) {
+                        //判断ojb子元素是否为对象，如果是，递归复制
+                        if (obj[key] && typeof obj[key] === 'object') {
+                            objClone[key] = this.deepCloneObject(obj[key]);
+                        } else {
+                            //如果不是，简单复制
+                            objClone[key] = obj[key];
+                        }
+                    }
+                }
+            }
+            return objClone;
         }
+
     },
     beforeDestroy(){  //防止重复创建
         this.dispose(); //销毁播放器(防止直播播放的情况下,播放器已经销毁,而后台还在继续下载资源造成卡顿的bug)
