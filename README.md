@@ -412,6 +412,8 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## 更新日志 
 
+> v1.2.9 修正部分默认属性, 感谢"Schean17"网友的反馈与建议.
+
 > v1.2.8  更换底层默认sdk版本为2.9.3 修复options 遇到 update loop 错误 感谢"litmonw"网友的反馈与建议.
 
 > v1.2.7 更换底层默认sdk版本为2.9.1的版本. 更新线上演示demo的选项
