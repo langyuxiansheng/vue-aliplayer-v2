@@ -59,42 +59,42 @@ export default {
             options: {
                 // source:'//player.alicdn.com/video/aliyunmedia.mp4',
                 isLive: !true,   //切换为直播流的时候必填
-                skinLayout: [
-                {
-                    'name': 'bigPlayButton',
-                    'align': 'blabs',
-                    'x': 30,
-                    'y': 80
-                },
-                {
-                    'name': 'infoDisplay'
-                },
-                {
-                    'name': 'controlBar',
-                    'align': 'blabs',
-                    'x': 0,
-                    'y': 0,
-                    'children': [
-                        {
-                            'name': 'liveDisplay',
-                            'align': 'tlabs',
-                            'x': 15,
-                            'y': 6
-                        },
-                        {
-                            'name': 'fullScreenButton',
-                            'align': 'tr',
-                            'x': 10,
-                            'y': 10
-                        },
-                        {
-                            'name': 'volume',
-                            'align': 'tr',
-                            'x': 5,
-                            'y': 10
-                        }
-                    ]
-                }]
+                // skinLayout: [
+                // {
+                //     'name': 'bigPlayButton',
+                //     'align': 'blabs',
+                //     'x': 30,
+                //     'y': 80
+                // },
+                // {
+                //     'name': 'infoDisplay'
+                // },
+                // {
+                //     'name': 'controlBar',
+                //     'align': 'blabs',
+                //     'x': 0,
+                //     'y': 0,
+                //     'children': [
+                //         {
+                //             'name': 'liveDisplay',
+                //             'align': 'tlabs',
+                //             'x': 15,
+                //             'y': 6
+                //         },
+                //         {
+                //             'name': 'fullScreenButton',
+                //             'align': 'tr',
+                //             'x': 10,
+                //             'y': 10
+                //         },
+                //         {
+                //             'name': 'volume',
+                //             'align': 'tr',
+                //             'x': 5,
+                //             'y': 10
+                //         }
+                //     ]
+                // }]
                 // useFlashPrism: false,    //指定为flash
                 // disableSeek: true //禁用进度条的Seek，默认值为false
             },

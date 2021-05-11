@@ -1,6 +1,6 @@
 {
     "name": "vue-aliplayer-v2",
-    "version": "1.2.8",
+    "version": "1.2.9",
     "author": "yxs",
     "description": "感谢每一位支持开源的朋友. 这是一个基于Alipayer 开发并封装成vue组件的集成播放器.可播放rtmp,m3u8,mp4....视频.除支持直播流与点播的基础功能外,也支持视频的加密播放、清晰度切换、直播时移等业务场景",
     "main": "lib/vue-aliplayer-v2.umd.min.js",

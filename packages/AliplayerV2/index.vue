@@ -34,8 +34,6 @@ export default {
                 id: null,  //播放器的ID
                 width: '100%',
                 autoplay: true,
-                skinLayout: false,
-                progressMarkers: false
                 // isLive: true,
                 //支持播放地址播放,此播放优先级最高
                 // source: 'rtmp://182.145.195.238:1935/hls/1194076936807170050',
