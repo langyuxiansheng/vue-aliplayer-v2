@@ -1,7 +1,7 @@
 <template>
     <div id="app">
         <template v-if="!isShowMultiple && show">
-            <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" :options="options" />
+            <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" :options="options"/>
         </template>
         <div v-if="isShowMultiple && show" class="show-multiple">
             <template v-for="x in 5">
@@ -34,23 +34,74 @@
             <span class="source-label">输入播放源(支持动态切换):</span>
             <input class="source-input" type="text" v-model="source">
         </div>
+        <div class="source-box">
+            <span class="source-label">指定为flash:</span>
+              <select v-model="options.useFlashPrism">
+                <option :value="true">是</option>
+                <option :value="false">否</option>
+            </select>
+        </div>
+        <div class="source-box">
+            <span class="source-label">禁止用户拖动(仅flash有效):</span>
+              <select v-model="options.disableSeek">
+                <option :value="true">是</option>
+                <option :value="false">否</option>
+            </select>
+        </div>
     </div>
 </template>
 <script>
 // import VueAliplayerV2 from '../packages';
 export default {
-    // components:{ VueAliplayerV2: VueAliplayerV2.Player },
+    // components:{ VueAliplayerV2 },
     data(){
         return {
             options: {
                 // source:'//player.alicdn.com/video/aliyunmedia.mp4',
-                isLive: true,   //切换为直播流的时候必填
-                // format: 'm3u8'  //切换为直播流的时候必填
+                isLive: !true,   //切换为直播流的时候必填
+                // skinLayout: [
+                // {
+                //     'name': 'bigPlayButton',
+                //     'align': 'blabs',
+                //     'x': 30,
+                //     'y': 80
+                // },
+                // {
+                //     'name': 'infoDisplay'
+                // },
+                // {
+                //     'name': 'controlBar',
+                //     'align': 'blabs',
+                //     'x': 0,
+                //     'y': 0,
+                //     'children': [
+                //         {
+                //             'name': 'liveDisplay',
+                //             'align': 'tlabs',
+                //             'x': 15,
+                //             'y': 6
+                //         },
+                //         {
+                //             'name': 'fullScreenButton',
+                //             'align': 'tr',
+                //             'x': 10,
+                //             'y': 10
+                //         },
+                //         {
+                //             'name': 'volume',
+                //             'align': 'tr',
+                //             'x': 5,
+                //             'y': 10
+                //         }
+                //     ]
+                // }]
+                // useFlashPrism: false,    //指定为flash
+                // disableSeek: true //禁用进度条的Seek，默认值为false
             },
             source: '//player.alicdn.com/video/aliyunmedia.mp4',
             // source: '//ivi.bupt.edu.cn/hls/cctv1.m3u8',
             show: true,
-            isShowMultiple: false
+            isShowMultiple: false,
         }
     },
 
@@ -124,7 +175,7 @@ export default {
 }
 .source-box{
     padding: 5px 10px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     .source-label{
         margin-right: 20px;
         font-size: 16px;

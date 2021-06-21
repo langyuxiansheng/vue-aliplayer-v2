@@ -1,5 +1,5 @@
 # vue-alipayer-v2
-## 感谢每一位开源的开发者. 这是一个基于Alipayer 开发并封装成vue组件的播放器.
+## 感谢每一位支持开源的朋友. 这是一个基于Alipayer 开发并封装成vue组件的播放器.
 ### vue中使用Alipayer,播放rtmp,m3u8,mp4视频
 #### [本项目在线演示](https://langyuxiansheng.github.io/vue-aliplayer-v2/)
 #### [阿里云播放器在线演示](https://player.alicdn.com/aliplayer/index.html)
@@ -19,33 +19,53 @@ yarn add vue-aliplayer-v2
 import VueAliplayerV2 from 'vue-aliplayer-v2';
 
 Vue.use(VueAliplayerV2);
+
+//可选全局配置
+//Vue.use(VueAliplayerV2,{
+    // cssLink: 'https://g.alicdn.com/de/prismplayer/2.8.2/skins/default/aliplayer-min.css',
+    // scriptSrc: 'https://g.alicdn.com/de/prismplayer/2.8.2/aliplayer-min.js'
+//});
 ```
 
 #### 局部注册 App.vue
 
 ```javascript
+
+//推荐第一种(仅v1.2.3)及以上的版本可用
 import VueAliplayerV2 from 'vue-aliplayer-v2';
+components:{ VueAliplayerV2 }
+
+//或者 
 components:{ VueAliplayerV2: VueAliplayerV2.Player }
+
 ```
 
 ## 2.组件中使用
 
-### 组件模板使用,但需要注意的是,假如你的页面中有多个播放器,那么这个id需要唯一!!,ID必传,只有一个的时候,可以忽略,命名只能是有效字符开头. 下面的视频连接仅供演示测试.
+### 组件模板使用,下面的视频连接仅供演示测试.
 ```html
 <template>
     <div id="app">
-        <template v-if="show">
+        <template v-if="!isShowMultiple && show">
             <vue-aliplayer-v2 :source="source" ref="VueAliplayerV2" :options="options" />
         </template>
-        <p class="remove-text" v-else>播放器已销毁!</p>
+        <div v-if="isShowMultiple && show" class="show-multiple">
+            <template v-for="x in 5">
+                <vue-aliplayer-v2 class="multiple-player" :key="x" :source="source" ref="VueAliplayerV2" :options="options" />
+            </template>
+        </div>
+        <p class="remove-text" v-if="!show">播放器已销毁!</p>
         <div class="player-btns">
-            <span @click="play()">播放</span>
-            <span @click="pause()">暂停</span>
-            <span @click="replay()">重播</span>
-            <span @click="getCurrentTime()">播放时刻</span>
+            <template v-if="!isShowMultiple && show">
+                <span @click="play()">播放</span>
+                <span @click="pause()">暂停</span>
+                <span @click="replay()">重播</span>
+                <span @click="getCurrentTime()">播放时刻</span>
+                <span @click="getStatus()">获取播放器状态</span>
+            </template>
             <span @click="show = !show">{{ show ? '销毁' : '重载' }}</span>
             <span @click="options.isLive = !options.isLive">{{ options.isLive ? '切换普通模式' : '切换直播模式' }}</span>
-            <span @click="getStatus()">获取播放器状态</span>
+            <span @click="showMultiple()">{{isShowMultiple ? '显示1个播放器' : '显示多个播放器'}}</span>
         </div>
         <div class="source-box">
             <span class="source-label">选择播放源(支持动态切换):</span>
@@ -63,16 +83,18 @@ components:{ VueAliplayerV2: VueAliplayerV2.Player }
     </div>
 </template>
 <script>
-// import VueAliplayerV2 from 'vue-aliplayer-v2';
 export default {
-    // components:{ VueAliplayerV2: VueAliplayerV2.Player },
     data(){
         return {
             options: {
-                source:'//player.alicdn.com/video/aliyunmedia.mp4'
+                // source:'//player.alicdn.com/video/aliyunmedia.mp4',
+                isLive: true,   //切换为直播流的时候必填
+                // format: 'm3u8'  //切换为直播流的时候必填
             },
             source: '//player.alicdn.com/video/aliyunmedia.mp4',
-            show: true
+            // source: '//ivi.bupt.edu.cn/hls/cctv1.m3u8',
+            show: true,
+            isShowMultiple: false
         }
     },
 
@@ -91,8 +113,31 @@ export default {
         },
 
         getCurrentTime(){
-            this.$refs.VueAliplayerV2.getCurrentTime();
+            // this.$refs.VueAliplayerV2.getCurrentTime();
+            this.source = 'http://ivi.bupt.edu.cn/hls/cctv1.m3u8';
+        },
+
+        getStatus(){
+           const status =  this.$refs.VueAliplayerV2.getStatus();
+           console.log(`getStatus:`, status);
+           alert(`getStatus:${status}`);
+        },
+
+        showMultiple(){
+            this.isShowMultiple = !this.isShowMultiple;
+        },
+
+       watch: {
+            source: {
+                handler() {
+                    this.show = !this.show
+                    setTimeout(()=>{   //设置延迟执行
+                        this.show = !this.show
+                    },1);
+                }
+            }
         }
+
     }
 }
 </script>
@@ -105,6 +150,13 @@ export default {
     text-align: center;
     padding: 20px;
     font-size: 24px;
+}
+.show-multiple{
+    display: flex;
+    .multiple-player{
+        width: calc(100% / 4);
+        margin: 20px;
+    }
 }
 .player-btns{
     width: 100%;
@@ -162,22 +214,16 @@ props:{
         type: [Object],
         default: () => null
     },
-    
-    id:{  //播放器的ID 唯一标识符 不传就是默认的 但是有多个的时候不一定是唯一的
-        required: false,
-        type: [String],
-        default: `player-${Date.parse(new Date())}`
-    },
 
     cssLink:{   //css版本源
         required: false,
         type: [String],
-        default: `https://g.alicdn.com/de/prismplayer/2.8.2/skins/default/aliplayer-min.css`
+        default: `https://g.alicdn.com/de/prismplayer/2.9.0/skins/default/aliplayer-min.css`
     },
     scriptSrc:{ //js版本源
         required: false,
         type: [String],
-        default: `https://g.alicdn.com/de/prismplayer/2.8.2/aliplayer-min.js`
+        default: `https://g.alicdn.com/de/prismplayer/2.9.0/aliplayer-min.js`
     }
 }
 ```
@@ -376,9 +422,23 @@ npm run lint
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
-## 更新日志
+## 更新日志 
 
-> v1.2.1 修复指定id情况下,播放器报错"没有为播放器指定容器",目前移除外部指定id的方式,所有的播放器id都由内部生成,不再由外部指定容器(外部指定的意义并不大), 感谢"liyoro"的反馈和建议.
+> v1.2.9 修正部分默认属性, 感谢"Schean17"网友的反馈与建议.
+
+> v1.2.8  更换底层默认sdk版本为2.9.3 修复options 遇到 update loop 错误 感谢"litmonw"网友的反馈与建议.
+
+> v1.2.7 更换底层默认sdk版本为2.9.1的版本. 更新线上演示demo的选项，感谢网友“Ghost23333”的demo
+
+> v1.2.6 优化beforeDestroy() 部分的代码.
+
+> v1.2.5 更换默认的播放器SDK版本2.8.2 => 2.9.0,2.8.2的版本存在多个播放器同时播放直播流异常的bug,增加了全局SDK版本配置,可以在Vue.use()的时候进行配置.
+
+> v1.2.4 修复多个播放器加载,只初始化一个播放器的bug.文档部分更新,增加了问题栏. 感谢"沙洲ad"的反馈与建议.
+
+> v1.2.3 优化播放器的初始化代码,调整包内结构,优化局部组件的注册方式,也兼容老版本的引用方式.文档部分更新,增加了问题栏. 感谢"liangzhiyuan2015"和"fancheur"两位网友的反馈与建议.
+
+> v1.2.2 修复指定id情况下,播放器报错"没有为播放器指定容器",目前移除外部指定id的方式,所有的播放器id都由内部生成,不再由外部指定容器(外部指定的意义并不大),其它的说明:更新1.2.1后报错Uncaught TypeError: 没有为播放器指定容器,因为源码中变更了部分代码,以及最大限度的简化代码,组件内部的根容器就只有一个div容器,导致以前外部指定id的时候,容器id与外部的不一致,导致抛出异常了,现在已经紧急修复了,若在使用,请更新到v1.2.2的版本;如果使用了外部指定id的方式请移除外部的id.否则id会出现重复的情况., 感谢"liyoro"的反馈和建议.
 
 > v1.2.1 修复直播播放的情况下,播放器已经销毁,而后台还在继续下载资源造成卡顿的bug,修复多个播放器只渲染1个的bug, 感谢"Jonauil"和"guangming95"两位网友的反馈和建议.
 
@@ -392,3 +452,30 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 > v1.1.6 修复部分已知bug和优化局部的引用方式
 
+---
+## 其它问题
+
+1. IOS 或者其它设备无法全屏播放,或者点击全屏按钮的时候也只是显示竖屏？
+
+> 方案与问题所在: 
+
+一般情况下可能是开启了强制竖屏(也就是屏幕锁定)打开后就会竖屏而不会全屏了！如下关闭就可以了：
+参考issues: https://github.com/langyuxiansheng/vue-aliplayer-v2/issues/25
+
+-开启了屏幕锁定，只要上拉控制中心，点击屏幕锁定关闭就可以了！
+
+-也可能是播放器或者浏览器兼容性问题.
+
+2. 关于直播视频切换的问题，可以参考：
+```javascript
+ watch: {
+    source: {
+        handler() {
+            this.show = !this.show
+            setTimeout(()=>{   //直播视频切换的问题，设置延迟执行
+                this.show = !this.show
+            },1);
+        }
+    }
+}
+```

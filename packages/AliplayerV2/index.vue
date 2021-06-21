@@ -15,20 +15,15 @@ export default {
             type: [String],
             default: null
         },
-        // id:{
-        //     required: false,
-        //     type: [String],
-        //     default: null
-        // },
         cssLink:{   //css版本源
             required: false,
             type: [String],
-            default: `https://g.alicdn.com/de/prismplayer/2.8.2/skins/default/aliplayer-min.css`
+            default: `https://g.alicdn.com/de/prismplayer/2.9.3/skins/default/aliplayer-min.css`
         },
         scriptSrc:{ //js版本源
             required: false,
             type: [String],
-            default: `https://g.alicdn.com/de/prismplayer/2.8.2/aliplayer-min.js`
+            default: `https://g.alicdn.com/de/prismplayer/2.9.3/aliplayer-min.js`
         }
     },
     data () {
@@ -132,9 +127,9 @@ export default {
 
         options:{   //配置项是对象,只能深度监听
             handler(){
-               this.init();
+                this.init();
             },
-            deep:true
+            deep: true
         }
     },
     mounted () {
@@ -155,8 +150,8 @@ export default {
          * 加载Alipayer的SDK
          */
         init(){
-            const linkID = 'aliplayer-min-css';
-            const scriptID = 'aliplayer-min-js';
+            const linkID = 'app__aliplayer-min-css';
+            const scriptID = 'app__aliplayer-min-js';
             const head = document.getElementsByTagName('head');
             const html = document.getElementsByTagName('html');
             let scriptTag = document.getElementById(scriptID);
@@ -168,6 +163,7 @@ export default {
                 link.rel = 'stylesheet';
                 link.href = this.cssLink;
                 link.id = linkID;
+                // link.className = linkID;
                 head[0].appendChild(link);
             }
             if(!scriptTag) {
@@ -175,17 +171,16 @@ export default {
                 scriptTag = document.createElement('script');
                 scriptTag.type = "text/javascript";
                 scriptTag.id = scriptID;
+                // scriptTag.className = scriptID;
                 scriptTag.src = this.scriptSrc;
                 html[0].appendChild(scriptTag);
-                scriptTag.addEventListener("load", () => {
-                    this.initPlayer();
-                });
             } else {
                 this.initPlayer();  //这样是为了兼容页面上有多个播放器
-                scriptTag.addEventListener("load", () => {
-                    this.initPlayer();
-                });
             }
+            //兼容单页加载和硬加载
+            scriptTag.addEventListener("load", () => {
+                this.initPlayer();
+            });
         },
 
         /**
@@ -194,10 +189,10 @@ export default {
          */
         initPlayer(){
             if(typeof window.Aliplayer != 'undefined') {
-                const options = this.options;
+                const options = this.deepCloneObject(this.options);
                 if(options){
                     for (const key in options) {
-                       this.config[key] = options[key];
+                        this.config[key] = options[key];
                     }
                 }
                 if(this.source) this.config.source = this.source; //播放源
@@ -488,15 +483,44 @@ export default {
          */
         off(ev,handle){
             this.player && this.player.off(ev,handle);
+        },
+
+
+        /**
+         * 深度拷贝
+         * @param {*} obj
+         */
+        deepCloneObject (obj) {
+            let objClone = Array.isArray(obj) ? [] : {};
+            if (obj && typeof obj === 'object') {
+                for (let key in obj) {
+                    if (obj.hasOwnProperty(key)) {
+                        //判断ojb子元素是否为对象，如果是，递归复制
+                        if (obj[key] && typeof obj[key] === 'object') {
+                            objClone[key] = this.deepCloneObject(obj[key]);
+                        } else {
+                            //如果不是，简单复制
+                            objClone[key] = obj[key];
+                        }
+                    }
+                }
+            }
+            return objClone;
         }
+
     },
     beforeDestroy(){  //防止重复创建
         this.dispose(); //销毁播放器(防止直播播放的情况下,播放器已经销毁,而后台还在继续下载资源造成卡顿的bug)
-        const head = document.querySelector('head');    //移除所有的重复创建的标签
-        const nodes = document.querySelectorAll('script[src="https://g.alicdn.com/de/prismplayer/2.8.2/hls/aliplayer-hls-min.js"]');
-        head && nodes.forEach((item)=>{
-            head.removeChild(item);
-        });
+        // const head = document.querySelector('head');
+        // const cssNodes = document.querySelectorAll(`link.app__aliplayer-min-css`);
+        // (html && cssNodes.length > 1) && cssNodes.forEach((item, index)=>{
+        //     if(index != 0) head.removeChild(item);
+        // });
+        // const html = document.querySelector('html');
+        // const jsNodes = document.querySelectorAll(`script.app__aliplayer-min-js`);
+        // (html && jsNodes.length > 1) && jsNodes.forEach((item, index)=>{
+        //     if(index != 0) html.removeChild(item);
+        // });
     }
 };
 </script>
