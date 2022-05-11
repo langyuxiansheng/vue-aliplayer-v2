@@ -129,6 +129,10 @@ export default {
         source(){ //监听播放源变化
             this.init();
         },
+        forbidFastForward(){
+            this.init();
+
+        },
 
         options:{   //配置项是对象,只能深度监听
             handler(){
