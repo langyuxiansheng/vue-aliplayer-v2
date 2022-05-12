@@ -5,7 +5,7 @@
 export default {
     name: 'VueAliplayerV2',
     props: {
-        forbidFastForward:{
+        forbidFastForward: {    //禁止拖拽快进
             required: false,
             type: [Boolean],
             default: false
@@ -20,22 +20,22 @@ export default {
             type: [String],
             default: null
         },
-        cssLink:{   //css版本源
+        cssLink: {   //css版本源
             required: false,
             type: [String],
-            default: `https://g.alicdn.com/de/prismplayer/2.9.7/skins/default/aliplayer-min.css`
+            default: `https://g.alicdn.com/de/prismplayer/2.9.20/skins/default/aliplayer-min.css`
         },
-        scriptSrc:{ //js版本源
+        scriptSrc: { //js版本源
             required: false,
             type: [String],
-            default: `https://g.alicdn.com/de/prismplayer/2.9.7/aliplayer-min.js`
+            default: `https://g.alicdn.com/de/prismplayer/2.9.20/aliplayer-min.js`
         }
     },
     data () {
         return {
             player: null,   //播放器实例
             playerId: `player-${Math.random().toString(36).substr(2).toLocaleUpperCase()}`,
-            config:{
+            config: {
                 id: null,  //播放器的ID
                 width: '100%',
                 autoplay: true,
@@ -43,7 +43,7 @@ export default {
                 //支持播放地址播放,此播放优先级最高
                 // source: 'rtmp://182.145.195.238:1935/hls/1194076936807170050',
             },
-            events:[
+            events: [
                 /**
                  * 播放器视频初始化按钮渲染完毕。
                  * 播放器UI初始设置需要此事件后触发，避免UI被初始化所覆盖。
@@ -125,49 +125,49 @@ export default {
             ],
         };
     },
-    watch:{
-        source(){ //监听播放源变化
+    watch: {
+        source () { //监听播放源变化
             this.init();
         },
-        forbidFastForward(){
+        forbidFastForward () {
             this.init();
 
         },
 
-        options:{   //配置项是对象,只能深度监听
-            handler(){
+        options: {   //配置项是对象,只能深度监听
+            handler () {
                 this.init();
             },
             deep: true
         }
     },
     mounted () {
-        this.$nextTick(()=>{
+        this.$nextTick(() => {
             this.init();
         });
     },
-    updated(){
+    updated () {
         //重载播放器
-        this.$nextTick(()=>{
+        this.$nextTick(() => {
             this.init();
         });
     },
     methods: {
-        handlerFastForward(){
+        handlerFastForward () {
 
         },
         /**
          * 创建script和css
          * 加载Alipayer的SDK
          */
-        init(){
+        init () {
             const linkID = 'app__aliplayer-min-css';
             const scriptID = 'app__aliplayer-min-js';
             const head = document.getElementsByTagName('head');
             const html = document.getElementsByTagName('html');
             let scriptTag = document.getElementById(scriptID);
             let linkIDTag = document.getElementById(linkID);
-            if(!linkIDTag) {
+            if (!linkIDTag) {
                 // console.log('linkIDTag');
                 const link = document.createElement('link');
                 link.type = 'text/css';
@@ -177,7 +177,7 @@ export default {
                 // link.className = linkID;
                 head[0].appendChild(link);
             }
-            if(!scriptTag) {
+            if (!scriptTag) {
                 // console.log('scriptTag');
                 scriptTag = document.createElement('script');
                 scriptTag.type = "text/javascript";
@@ -198,46 +198,41 @@ export default {
          * 创建播放器
          * @description SDK文档地址:https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1084.131d1c4cJT7o5Z
          */
-        initPlayer(){
-            if(typeof window.Aliplayer != 'undefined') {
+        initPlayer () {
+            if (typeof window.Aliplayer != 'undefined') {
                 const options = this.deepCloneObject(this.options);
-                if(options){
+                if (options) {
                     for (const key in options) {
                         this.config[key] = options[key];
                     }
                 }
-                if(this.source) this.config.source = this.source; //播放源
+                if (this.source) this.config.source = this.source; //播放源
                 this.config.id = this.playerId; //赋值播放器容器id
                 this.player && this.player.dispose();   //防止实例的重复
                 this.player = Aliplayer(this.config);
-                for(const ev in this.events){
-                    this.player && this.player.on(this.events[ev],(e)=>{
+                for (const ev in this.events) {
+                    this.player && this.player.on(this.events[ev], (e) => {
                         // console.log(`object ${this.events[ev]}`,e);
-                        this.$emit(this.events[ev],e);
+                        this.$emit(this.events[ev], e);
                     });
                 }
 
-                if(this.forbidFastForward){
 
-                
-                let last = 0,max_time=0;
-                this.player.on('timeupdate',function(){
-                    let current = this.getCurrentTime();
-                     if(current - last > 2) {
+                //开启禁止拖拽快进
+                if (this.forbidFastForward) {
+                    let last = 0, max_time = 0;
+                    this.player.on('timeupdate', function () {
+                        let current = this.getCurrentTime();
+                        if (current - last > 2) {
                             this.seek(last);
                         } else {
                             last = current;
-                            if(last >= max_time){
-                                max_time=last;
+                            if (last >= max_time) {
+                                max_time = last;
                             }
                         }
-
-
-
-
-
-                })
-            }
+                    });
+                }
 
                 //通过播放器实例的off方法取消订阅
                 //player.off('ready',handleReady);
@@ -247,14 +242,14 @@ export default {
         /**
          * @return player 实例
          */
-        getPlayer(){
+        getPlayer () {
             return this.player;
         },
 
         /**
          * 播放视频。
          */
-        play(){
+        play () {
             // console.log(`播放视频。`);
             this.player && this.player.play();
         },
@@ -262,7 +257,7 @@ export default {
         /**
          * 暂停视频
          */
-        pause(){
+        pause () {
             // console.log(`暂停视频`);
             this.player && this.player.pause();
         },
@@ -270,7 +265,7 @@ export default {
         /**
          * 重播视频
          */
-        replay(){
+        replay () {
             // console.log(`重播视频`);
             this.player && this.player.replay();
         },
@@ -280,7 +275,7 @@ export default {
          * @param time
          * @return player
          */
-        seek(time){
+        seek (time) {
             // console.log(`跳转到某个时刻进行播放，time为${time}秒。`);
             this.player && this.player.seek(time);
         },
@@ -289,7 +284,7 @@ export default {
          * 获取当前的播放时刻，返回的单位为秒。
          * @return player
          */
-        getCurrentTime(){
+        getCurrentTime () {
             // console.log(`获取当前的播放时刻，返回的单位为${this.player && this.player.getCurrentTime()}秒。`);
             return this.player && this.player.getCurrentTime();
         },
@@ -298,7 +293,7 @@ export default {
          * 获取视频总时长，返回的单位为秒，这个需要在视频加载完成以后才可以获取到，可以在play事件后获取。
          * @return player
          */
-        getDuration(){
+        getDuration () {
             // console.log(`获取视频总时长，返回的单位为${this.player && this.player.getDuration()}秒。`);
             return this.player && this.player.getDuration();
         },
@@ -307,7 +302,7 @@ export default {
          * 获取当前的音量，返回值为0-1的实数。ios和部分android会失效。
          * @return player
          */
-        getVolume(){
+        getVolume () {
             // console.log(`获取当前的音量${this.player && this.player.getVolume()}。`);
             return this.player && this.player.getVolume();
         },
@@ -316,7 +311,7 @@ export default {
          * 设置音量，vol为0-1的实数，ios和部分android会失效。
          * @return player
          */
-        setVolume(v){
+        setVolume (v) {
             // console.log(`设置音量，vol为${v}。`);
             this.player && this.player.setVolume(v);
         },
@@ -326,7 +321,7 @@ export default {
          * 暂不支持直播rtmp流切换。
          * @return player
          */
-        loadByUrl(url, time){
+        loadByUrl (url, time) {
             // console.log(`直接播放视频url${url}，time为${time}。`);
             this.player && this.player.loadByUrl(url, time);
         },
@@ -336,7 +331,7 @@ export default {
          * @param vid 视频id
          * @param 播放凭证
          */
-        replayByVidAndPlayAuth(vid, playauth){
+        replayByVidAndPlayAuth (vid, playauth) {
             // console.log(`replayByVidAndPlayAuth vid${vid}，playauth为${playauth}。`);
             this.player && this.player.replayByVidAndPlayAuth(vid, playauth);
         },
@@ -347,7 +342,7 @@ export default {
          * @param 播放凭证
          * @description 仅MPS用户时使用 仅MPS用户时使用 参数顺序为：vid、accId、accSecret、stsToken、authInfo、domainRegion
          */
-        replayByVidAndAuthInfo(vid, accId, accSecret, stsToken, authInfo, domainRegion){
+        replayByVidAndAuthInfo (vid, accId, accSecret, stsToken, authInfo, domainRegion) {
             // console.log(`replayByVidAndAuthInfo 参数顺序为：vid、accId、accSecret、stsToken、authInfo、domainRegion`,vid, accId, accSecret, stsToken, authInfo, domainRegion);
             this.player && this.player.replayByVidAndAuthInfo(vid, accId, accSecret, stsToken, authInfo, domainRegion);
         },
@@ -358,7 +353,7 @@ export default {
          * @param h 宽度
          * @description chrome浏览器下flash播放器分别不能小于397x297。
          */
-        setPlayerSize(w, h){
+        setPlayerSize (w, h) {
             // console.log(`设置播放器大小 宽度:${w},高度:${h}`);
             this.player && this.player.setPlayerSize(w, h);
         },
@@ -370,7 +365,7 @@ export default {
          * @param h 宽度
          * @description {name：“speedButton”，align：“tr”，x：10，y：23}
          */
-        setSpeed(speed){
+        setSpeed (speed) {
             // console.log(`手动设置播放的倍速:${speed}`);
             this.player && this.player.setSpeed(speed);
         },
@@ -381,7 +376,7 @@ export default {
          * @param height 高度
          * @param rate 截图质量
          */
-        setSanpshotProperties(width, height, rate){
+        setSanpshotProperties (width, height, rate) {
             // console.log(`设置截图参数:`,width, height, rate);
             this.player && this.player.setSanpshotProperties(width, height, rate);
         },
@@ -389,7 +384,7 @@ export default {
         /**
          * 播放器全屏，仅H5支持。
          */
-        requestFullScreen(){
+        requestFullScreen () {
             // console.log(`播放器全屏，仅H5支持`);
             this.player && this.player.fullscreenService && this.player.fullscreenService.requestFullScreen();
         },
@@ -397,7 +392,7 @@ export default {
         /**
          * 播放器退出全屏，iOS调用无效，仅H5支持。
          */
-        cancelFullScreen(){
+        cancelFullScreen () {
             // console.log(`播放器全屏，仅H5支持`);
             this.player && this.player.fullscreenService && this.player.fullscreenService.cancelFullScreen();
         },
@@ -405,7 +400,7 @@ export default {
         /**
          * 获取播放器全屏状态，仅H5支持。
          */
-        getIsFullScreen(){
+        getIsFullScreen () {
             // console.log(`获取播放器全屏状态，仅H5支持。`,this.player && this.player.fullscreenService && this.player && this.player.fullscreenService.getIsFullScreen());
             return this.player && this.player.fullscreenService && this.player.fullscreenService.getIsFullScreen();
         },
@@ -414,7 +409,7 @@ export default {
          * 获取播放器状态，包含的值,
          * @returns init ready loading play pause playing waiting error ended
          */
-        getStatus(){
+        getStatus () {
             // console.log(`获取播放器状态，包含的值`,this.player && this.player.fullscreenService && this.player && this.player.fullscreenService.getStatus());
             return this.player && this.player.getStatus();
         },
@@ -425,7 +420,7 @@ export default {
          * @param endTime 结束时间
          * @description 例子：player.liveShiftSerivce.setLiveTimeRange(“”，‘2018/01/04 20:00:00’)
          */
-        setLiveTimeRange(beginTime, endTime){
+        setLiveTimeRange (beginTime, endTime) {
             // console.log(`设置直播的开始时间:${beginTime},结束时间:${endTime}，开启直播时移功能时使用。`);
             this.player && this.player.liveShiftSerivce && this.player.liveShiftSerivce.setLiveTimeRange(beginTime, endTime);
         },
@@ -435,7 +430,7 @@ export default {
          * @param rotate 旋转角度
          * @description 例如: setRotate(90)。详情参见旋转和镜像。
          */
-        setRotate(rotate){
+        setRotate (rotate) {
             // console.log(`参数为旋转角度:${rotate}。`);
             this.player && this.player.setRotate(rotate);
         },
@@ -444,7 +439,7 @@ export default {
          * 获取旋转角度。详情参见旋转和镜像。
          * @return rotate 旋转角度
          */
-        getRotate(){
+        getRotate () {
             // console.log(`获取旋转角度:${this.player && this.player.getRotate()}`);
             return this.player && this.player.getRotate();
         },
@@ -454,7 +449,7 @@ export default {
          * @param image 镜像类型 可选值为：horizon,vertical
          * @description 例如: setImage(‘horizon’)。详情参见旋转和镜像。
          */
-        setImage(image){
+        setImage (image) {
             // console.log(`设置镜像:${image}。`);
             this.player && this.player.setImage(image);
         },
@@ -462,7 +457,7 @@ export default {
         /**
          * 播放器销毁
          */
-        dispose(){
+        dispose () {
             // console.log(`播放器销毁。`);
             this.player && this.player.dispose();
         },
@@ -471,7 +466,7 @@ export default {
          * 设置封面
          * @param cover 封面地址
          */
-        setCover(cover){
+        setCover (cover) {
             // console.log(`设置封面:${cover}`);
             this.player && this.player.setCover(cover);
         },
@@ -480,7 +475,7 @@ export default {
          * 设置封面
          * @param markers 设置打点数据
          */
-        setProgressMarkers(markers){
+        setProgressMarkers (markers) {
             // console.log(`markers打点数据集合:${markers}`);
             this.player && this.player.setProgressMarkers(markers);
         },
@@ -489,7 +484,7 @@ export default {
          * 设置试看时间，单位为秒，详情参见
          * @param time 试看时间
          */
-        setPreviewTime(time){
+        setPreviewTime (time) {
             // console.log(`设置试看时间，单位为:${time}秒`);
             this.player && this.player.setPreviewTime(time);
         },
@@ -498,7 +493,7 @@ export default {
          * 获取试看时间
          * @return rotate 旋转角度
          */
-        getPreviewTime(){
+        getPreviewTime () {
             // console.log(`获取试看时间:${this.player && this.player.getPreviewTime()}`);
             return this.player && this.player.getPreviewTime();
         },
@@ -506,7 +501,7 @@ export default {
         /**
          * 是否试看
          */
-        isPreview(){
+        isPreview () {
             // console.log(`是否试看`);
             this.player && this.player.isPreview();
         },
@@ -515,8 +510,8 @@ export default {
          * @param ev 事件名
          * @param handle 回调方法
          */
-        off(ev,handle){
-            this.player && this.player.off(ev,handle);
+        off (ev, handle) {
+            this.player && this.player.off(ev, handle);
         },
 
 
@@ -543,7 +538,7 @@ export default {
         }
 
     },
-    beforeDestroy(){  //防止重复创建
+    beforeDestroy () {  //防止重复创建
         this.dispose(); //销毁播放器(防止直播播放的情况下,播放器已经销毁,而后台还在继续下载资源造成卡顿的bug)
         // const head = document.querySelector('head');
         // const cssNodes = document.querySelectorAll(`link.app__aliplayer-min-css`);
