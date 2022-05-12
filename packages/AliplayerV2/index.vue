@@ -5,6 +5,11 @@
 export default {
     name: 'VueAliplayerV2',
     props: {
+        forbidFastForward:{
+            required: false,
+            type: [Boolean],
+            default: false
+        },
         options: {  //配置项
             required: false,
             type: [Object],
@@ -124,6 +129,10 @@ export default {
         source(){ //监听播放源变化
             this.init();
         },
+        forbidFastForward(){
+            this.init();
+
+        },
 
         options:{   //配置项是对象,只能深度监听
             handler(){
@@ -144,7 +153,9 @@ export default {
         });
     },
     methods: {
+        handlerFastForward(){
 
+        },
         /**
          * 创建script和css
          * 加载Alipayer的SDK
@@ -205,6 +216,29 @@ export default {
                         this.$emit(this.events[ev],e);
                     });
                 }
+
+                if(this.forbidFastForward){
+
+                
+                let last = 0,max_time=0;
+                this.player.on('timeupdate',function(){
+                    let current = this.getCurrentTime();
+                     if(current - last > 2) {
+                            this.seek(last);
+                        } else {
+                            last = current;
+                            if(last >= max_time){
+                                max_time=last;
+                            }
+                        }
+
+
+
+
+
+                })
+            }
+
                 //通过播放器实例的off方法取消订阅
                 //player.off('ready',handleReady);
             }
