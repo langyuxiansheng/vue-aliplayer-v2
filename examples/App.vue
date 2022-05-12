@@ -13,7 +13,7 @@
         <p class="remove-text" v-if="!show">播放器已销毁!</p>
         <div class="player-btns">
             <template v-if="!isShowMultiple && show">
-                
+
                 <span @click="play()">播放</span>
                 <span @click="pause()">暂停</span>
                 <span @click="replay()">重播</span>
@@ -58,7 +58,7 @@
 // import VueAliplayerV2 from '../packages';
 export default {
     // components:{ VueAliplayerV2 },
-    data(){
+    data () {
         return {
             options: {
                 // source:'//player.alicdn.com/video/aliyunmedia.mp4',
@@ -105,42 +105,42 @@ export default {
             source: '//player.alicdn.com/video/aliyunmedia.mp4',
             // source: '//ivi.bupt.edu.cn/hls/cctv1.m3u8',
             show: true,
-            forbidFastForward:false,
+            forbidFastForward: false,
             isShowMultiple: false,
         }
     },
 
-    methods:{
+    methods: {
 
-        play(){
+        play () {
             this.$refs.VueAliplayerV2.play()
         },
 
-        pause(){
+        pause () {
             this.$refs.VueAliplayerV2.pause();
         },
 
-        replay(){
+        replay () {
             this.$refs.VueAliplayerV2.replay();
         },
-        handlerForbidFastForward(){
-           
+        handlerForbidFastForward () {
+
             this.forbidFastForward = true
 
         },
 
-        getCurrentTime(){
+        getCurrentTime () {
             // this.$refs.VueAliplayerV2.getCurrentTime();
             this.source = 'http://ivi.bupt.edu.cn/hls/cctv1.m3u8';
         },
 
-        getStatus(){
-           const status =  this.$refs.VueAliplayerV2.getStatus();
-           console.log(`getStatus:`, status);
-           alert(`getStatus:${status}`);
+        getStatus () {
+            const status = this.$refs.VueAliplayerV2.getStatus();
+            console.log(`getStatus:`, status);
+            alert(`getStatus:${status}`);
         },
 
-        showMultiple(){
+        showMultiple () {
             this.isShowMultiple = !this.isShowMultiple;
         }
     }
@@ -151,19 +151,19 @@ export default {
     margin: 0;
     padding: 0;
 }
-.remove-text{
+.remove-text {
     text-align: center;
     padding: 20px;
     font-size: 24px;
 }
-.show-multiple{
+.show-multiple {
     display: flex;
-    .multiple-player{
+    .multiple-player {
         width: calc(100% / 4);
         margin: 20px;
     }
 }
-.player-btns{
+.player-btns {
     width: 100%;
     display: flex;
     justify-content: center;
@@ -183,18 +183,18 @@ export default {
         cursor: pointer;
     }
 }
-.source-box{
+.source-box {
     padding: 5px 10px;
     margin-bottom: 10px;
-    .source-label{
+    .source-label {
         margin-right: 20px;
         font-size: 16px;
         display: block;
     }
-    #source{
+    #source {
         margin-top: 10px;
     }
-    .source-input{
+    .source-input {
         margin-top: 10px;
         padding: 5px 10px;
         width: 80%;

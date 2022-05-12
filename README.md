@@ -219,6 +219,13 @@ components: {
 
 ```javascript
 props:{
+
+    forbidFastForward: {    //禁止拖拽快进
+            required: false,
+            type: [Boolean],
+            default: false
+    },
+    
     options: {  //配置项 (options.source 不支持动态切换,需要动态切换请直接使用source)
         required: false,
         type: [Object],
@@ -455,10 +462,11 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## 更新日志
 
-> v1.3.0
+> v1.3.0 修复部分已知bug,增加forbidFastForward 属性,感谢 "william-xue"网友的功能提交.
 
-- sdk 版本更新,默认 SDK 版本由 2.9.3 更新为 2.9.7
+- sdk 版本更新,默认 SDK 版本由 2.9.3 更新为 2.9.20
 - 默认注释更新
+- 增加禁止用户拖拽快进的属性选项 forbidFastForward [Boolean] 默认 false
 
 > v1.2.9 修正部分默认属性, 感谢"Schean17"网友的反馈与建议.
 
