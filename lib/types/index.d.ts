@@ -1,0 +1,57 @@
+import type { App } from 'vue';
+import VueAliplayerV2 from './AliplayerV2/index.vue';
+import type { VueAliplayerV2Options } from './AliplayerV2/types';
+/**
+ * 对外重新导出组件相关类型。
+ *
+ * 使用方可以直接从包入口导入类型，不需要关心内部目录结构。
+ */
+export type { AliplayerEventName, AliplayerInstance, AliplayerLicense, AliplayerOptions, AliplayerV2Props, VueAliplayerV2Expose, VueAliplayerV2Options } from './AliplayerV2/types';
+/**
+ * 带 Vue 插件安装能力的组件类型。
+ *
+ * Vue SFC 默认导出的类型不包含运行时追加的 `install`、`Player` 和 props 默认值修改能力，
+ * 因此在入口处扩展该类型，保证后续赋值过程在 TypeScript 下可描述。
+ */
+type InstallableVueAliplayerV2 = typeof VueAliplayerV2 & {
+    /**
+     * Vue 插件安装方法，支持 `app.use(VueAliplayerV2, options)`。
+     */
+    install: (app: App, options?: VueAliplayerV2Options) => void;
+    /**
+     * 兼容旧版本 `VueAliplayerV2.Player` 的局部注册写法。
+     */
+    Player: typeof VueAliplayerV2;
+    /**
+     * 组件 props 运行时定义。
+     *
+     * 这里仅列出入口需要改写默认值的 props。
+     */
+    props: {
+        sdkVersion: {
+            default: string | (() => string);
+        };
+        cssLink: {
+            default: string | (() => string);
+        };
+        scriptSrc: {
+            default: string | (() => string);
+        };
+        componentScripts: {
+            default: string[] | (() => string[]);
+        };
+        disableTracking: {
+            default: boolean | (() => boolean);
+        };
+        trackingUrlPatterns: {
+            default: Array<string | RegExp> | (() => Array<string | RegExp>);
+        };
+    };
+};
+/**
+ * 添加插件安装能力后的播放器组件。
+ */
+declare const installable: InstallableVueAliplayerV2;
+export { installable as VueAliplayerV2 };
+export default installable;
+//# sourceMappingURL=index.d.ts.map

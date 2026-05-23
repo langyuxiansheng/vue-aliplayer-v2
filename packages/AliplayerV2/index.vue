@@ -1,555 +1,616 @@
 <template>
-    <div :id="playerId"></div>
+    <div :id="playerId" ref="containerRef" class="vue-aliplayer-v2"></div>
 </template>
-<script>
-export default {
-    name: 'VueAliplayerV2',
-    props: {
-        forbidFastForward: {    //禁止拖拽快进
-            required: false,
-            type: [Boolean],
-            default: false
-        },
-        options: {  //配置项
-            required: false,
-            type: [Object],
-            default: () => null
-        },
-        source: {  //播放源(此属性存在则优先于options.source) 动态切换,目前只支持同种格式（mp4/flv/m3u8）之间切换。暂不支持直播rtmp流切换。
-            required: false,
-            type: [String],
-            default: null
-        },
-        cssLink: {   //css版本源
-            required: false,
-            type: [String],
-            default: `https://g.alicdn.com/de/prismplayer/2.9.20/skins/default/aliplayer-min.css`
-        },
-        scriptSrc: { //js版本源
-            required: false,
-            type: [String],
-            default: `https://g.alicdn.com/de/prismplayer/2.9.20/aliplayer-min.js`
-        }
-    },
-    data () {
-        return {
-            player: null,   //播放器实例
-            playerId: `player-${Math.random().toString(36).substr(2).toLocaleUpperCase()}`,
-            config: {
-                id: null,  //播放器的ID
-                width: '100%',
-                autoplay: true,
-                // isLive: true,
-                //支持播放地址播放,此播放优先级最高
-                // source: 'rtmp://182.145.195.238:1935/hls/1194076936807170050',
-            },
-            events: [
-                /**
-                 * 播放器视频初始化按钮渲染完毕。
-                 * 播放器UI初始设置需要此事件后触发，避免UI被初始化所覆盖。
-                 * 播放器提供的方法需要在此事件发生后才可以调用。
-                 */
-                'ready',
-                /**
-                 * 视频由暂停恢复为播放时触发。
-                 */
-                'play',
-                /**
-                 * 视频暂停时触发。
-                 */
-                'pause',
-                /**
-                 * 能够开始播放音频/视频时发生，会多次触发，仅H5播放器。
-                 */
-                'canplay',
-                /**
-                 * 播放中，会触发多次。
-                 */
-                'playing',
-                /**
-                 * 当前视频播放完毕时触发。
-                 */
-                'ended',
-                /**
-                 * 直播流中断时触发。
-                 * m3u8/flv/rtmp在重试5次未成功后触发。
-                 * 提示上层流中断或需要重新加载视频。
-                 * PS：m3u8一直自动重试，不需要上层添加重试。
-                 */
-                'liveStreamStop',
-                /**
-                 * m3u8直播流中断后重试事件，每次断流只触发一次。
-                 */
-                'onM3u8Retry',
-                /**
-                 * 控制栏自动隐藏事件。
-                 */
-                'hideBar',
-                /**
-                 * 控制栏自动显示事件。
-                 */
-                'showBar',
-                /**
-                 * 数据缓冲事件。
-                 */
-                'waiting',
-                /**
-                 * 播放位置发生改变时触发，仅H5播放器。
-                 * 可通过getCurrentTime方法，得到当前播放时间。
-                 */
-                'timeupdate',
-                /**
-                 * 截图完成。
-                 */
-                'snapshoted',
-                /**
-                 * 全屏事件，仅H5支持。
-                 */
-                'requestFullScreen',
-                /**
-                 * 取消全屏事件，iOS下不会触发，仅H5支持。
-                 */
-                'cancelFullScreen',
-                /**
-                 * 错误事件。
-                 */
-                'error',
-                /**
-                 * 开始拖拽，参数返回拖拽点的时间。
-                 */
-                'startSeek',
-                /**
-                 * 完成拖拽，参数返回拖拽点的时间。
-                 */
-                'completeSeek'
-            ],
-        };
-    },
-    watch: {
-        source () { //监听播放源变化
-            this.init();
-        },
-        forbidFastForward () {
-            this.init();
 
-        },
+<script setup lang="ts">
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import {
+    DEFAULT_CSS_LINK,
+    DEFAULT_SCRIPT_SRC,
+    DEFAULT_SDK_VERSION,
+    getCssLinkByVersion,
+    getScriptSrcByVersion,
+    loadAliplayerSdk,
+    loadExtraScripts
+} from './sdkLoader';
+import { inferSourceFormat, normalizeSource, type SourceFormat } from './source';
+import { installTrackingBlocker } from './tracking';
+import type {
+    AliplayerEventName,
+    AliplayerInstance,
+    AliplayerOptions,
+    AliplayerV2Props,
+    VueAliplayerV2Expose
+} from './types';
 
-        options: {   //配置项是对象,只能深度监听
-            handler () {
-                this.init();
-            },
-            deep: true
-        }
-    },
-    mounted () {
-        this.$nextTick(() => {
-            this.init();
-        });
-    },
-    updated () {
-        //重载播放器
-        this.$nextTick(() => {
-            this.init();
-        });
-    },
-    methods: {
-        handlerFastForward () {
+defineOptions({
+    name: 'VueAliplayerV2'
+});
 
-        },
-        /**
-         * 创建script和css
-         * 加载Alipayer的SDK
-         */
-        init () {
-            const linkID = 'app__aliplayer-min-css';
-            const scriptID = 'app__aliplayer-min-js';
-            const head = document.getElementsByTagName('head');
-            const html = document.getElementsByTagName('html');
-            let scriptTag = document.getElementById(scriptID);
-            let linkIDTag = document.getElementById(linkID);
-            if (!linkIDTag) {
-                // console.log('linkIDTag');
-                const link = document.createElement('link');
-                link.type = 'text/css';
-                link.rel = 'stylesheet';
-                link.href = this.cssLink;
-                link.id = linkID;
-                // link.className = linkID;
-                head[0].appendChild(link);
-            }
-            if (!scriptTag) {
-                // console.log('scriptTag');
-                scriptTag = document.createElement('script');
-                scriptTag.type = "text/javascript";
-                scriptTag.id = scriptID;
-                // scriptTag.className = scriptID;
-                scriptTag.src = this.scriptSrc;
-                html[0].appendChild(scriptTag);
-            } else {
-                this.initPlayer();  //这样是为了兼容页面上有多个播放器
-            }
-            //兼容单页加载和硬加载
-            scriptTag.addEventListener("load", () => {
-                this.initPlayer();
-            });
-        },
+const props = withDefaults(defineProps<AliplayerV2Props>(), {
+    autoFormat: true,
+    componentScripts: () => [],
+    disableTracking: false,
+    forbidFastForward: false,
+    license: null,
+    lowLatency: false,
+    normalizeSourceUrl: true,
+    options: null,
+    sdkVersion: DEFAULT_SDK_VERSION,
+    source: null,
+    cssLink: '',
+    scriptSrc: '',
+    trackingUrlPatterns: () => []
+});
 
-        /**
-         * 创建播放器
-         * @description SDK文档地址:https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1084.131d1c4cJT7o5Z
-         */
-        initPlayer () {
-            if (typeof window.Aliplayer != 'undefined') {
-                const options = this.deepCloneObject(this.options);
-                if (options) {
-                    for (const key in options) {
-                        this.config[key] = options[key];
-                    }
-                }
-                if (this.source) this.config.source = this.source; //播放源
-                this.config.id = this.playerId; //赋值播放器容器id
-                this.player && this.player.dispose();   //防止实例的重复
-                this.player = Aliplayer(this.config);
-                for (const ev in this.events) {
-                    this.player && this.player.on(this.events[ev], (e) => {
-                        // console.log(`object ${this.events[ev]}`,e);
-                        this.$emit(this.events[ev], e);
-                    });
-                }
+const emit = defineEmits<{
+    (event: AliplayerEventName, payload?: unknown): void;
+    (event: 'sdk-error', error: Error): void;
+}>();
 
+/**
+ * 当前底层 Aliplayer 实例。
+ */
+const player = ref<AliplayerInstance | null>(null);
+/**
+ * 播放器挂载容器。
+ */
+const containerRef = ref<HTMLDivElement | null>(null);
+/**
+ * 组件是否已经卸载。
+ *
+ * SDK 和扩展脚本是异步加载的，卸载标记用于避免脚本加载完成后继续创建播放器。
+ */
+const isUnmounted = ref(false);
+/**
+ * 当前播放器实例对应的媒体格式。
+ *
+ * 用于判断 source 变化时是走 `loadByUrl` 还是重建播放器。
+ */
+const currentFormat = ref<SourceFormat>(null);
+/**
+ * 初始化批次令牌。
+ *
+ * 每次 `init` 都会递增，旧批次异步返回时如果令牌不一致就不会继续创建播放器，
+ * 避免快速切换参数造成 stale player。
+ */
+let initToken = 0;
+/**
+ * 内部自动生成的播放器容器 id。
+ */
+const playerId = `player-${Math.random().toString(36).slice(2).toUpperCase()}`;
+/**
+ * 需要从 Aliplayer 透传到 Vue 组件的事件列表。
+ */
+const eventNames: AliplayerEventName[] = [
+    'ready',
+    'play',
+    'pause',
+    'canplay',
+    'playing',
+    'ended',
+    'liveStreamStop',
+    'onM3u8Retry',
+    'hideBar',
+    'showBar',
+    'waiting',
+    'timeupdate',
+    'snapshoted',
+    'requestFullScreen',
+    'cancelFullScreen',
+    'error',
+    'startSeek',
+    'completeSeek'
+];
 
-                //开启禁止拖拽快进
-                if (this.forbidFastForward) {
-                    let last = 0, max_time = 0;
-                    this.player.on('timeupdate', function () {
-                        let current = this.getCurrentTime();
-                        if (current - last > 2) {
-                            this.seek(last);
-                        } else {
-                            last = current;
-                            if (last >= max_time) {
-                                max_time = last;
-                            }
-                        }
-                    });
-                }
+/**
+ * 实际使用的 CSS 地址。
+ */
+const resolvedCssLink = computed(() => props.cssLink || (props.sdkVersion ? getCssLinkByVersion(props.sdkVersion) : DEFAULT_CSS_LINK));
+/**
+ * 实际使用的 JS 地址。
+ */
+const resolvedScriptSrc = computed(() => props.scriptSrc || (props.sdkVersion ? getScriptSrcByVersion(props.sdkVersion) : DEFAULT_SCRIPT_SRC));
+/**
+ * 标准化后的播放源。
+ */
+const normalizedSource = computed(() => props.normalizeSourceUrl ? normalizeSource(props.source) : props.source);
+/**
+ * 从播放源推断出的格式。
+ */
+const sourceFormat = computed(() => inferSourceFormat(normalizedSource.value));
+/**
+ * 最终传给 Aliplayer 的初始化配置。
+ *
+ * 合并顺序为：组件默认值 -> `props.options` -> `license` prop -> `source` prop -> 内部 id。
+ * 这样可以保证容器 id 和显式 source 始终由组件控制，同时仍然保留大部分官方配置项的透传能力。
+ */
+const mergedOptions = computed<AliplayerOptions>(() => {
+    const options: AliplayerOptions = {
+        width: '100%',
+        autoplay: true,
+        ...(props.options || {}),
+        ...(props.license ? { license: props.license } : {}),
+        ...(normalizedSource.value ? { source: normalizedSource.value } : {}),
+        id: playerId
+    };
 
-                //通过播放器实例的off方法取消订阅
-                //player.off('ready',handleReady);
-            }
-        },
-
-        /**
-         * @return player 实例
-         */
-        getPlayer () {
-            return this.player;
-        },
-
-        /**
-         * 播放视频。
-         */
-        play () {
-            // console.log(`播放视频。`);
-            this.player && this.player.play();
-        },
-
-        /**
-         * 暂停视频
-         */
-        pause () {
-            // console.log(`暂停视频`);
-            this.player && this.player.pause();
-        },
-
-        /**
-         * 重播视频
-         */
-        replay () {
-            // console.log(`重播视频`);
-            this.player && this.player.replay();
-        },
-
-        /**
-         * 跳转到某个时刻进行播放，time的单位为秒。
-         * @param time
-         * @return player
-         */
-        seek (time) {
-            // console.log(`跳转到某个时刻进行播放，time为${time}秒。`);
-            this.player && this.player.seek(time);
-        },
-
-        /**
-         * 获取当前的播放时刻，返回的单位为秒。
-         * @return player
-         */
-        getCurrentTime () {
-            // console.log(`获取当前的播放时刻，返回的单位为${this.player && this.player.getCurrentTime()}秒。`);
-            return this.player && this.player.getCurrentTime();
-        },
-
-        /**
-         * 获取视频总时长，返回的单位为秒，这个需要在视频加载完成以后才可以获取到，可以在play事件后获取。
-         * @return player
-         */
-        getDuration () {
-            // console.log(`获取视频总时长，返回的单位为${this.player && this.player.getDuration()}秒。`);
-            return this.player && this.player.getDuration();
-        },
-
-        /**
-         * 获取当前的音量，返回值为0-1的实数。ios和部分android会失效。
-         * @return player
-         */
-        getVolume () {
-            // console.log(`获取当前的音量${this.player && this.player.getVolume()}。`);
-            return this.player && this.player.getVolume();
-        },
-
-        /**
-         * 设置音量，vol为0-1的实数，ios和部分android会失效。
-         * @return player
-         */
-        setVolume (v) {
-            // console.log(`设置音量，vol为${v}。`);
-            this.player && this.player.setVolume(v);
-        },
-
-        /**
-         * 直接播放视频url，time为可选值（单位秒）。目前只支持同种格式（mp4/flv/m3u8）之间切换。
-         * 暂不支持直播rtmp流切换。
-         * @return player
-         */
-        loadByUrl (url, time) {
-            // console.log(`直接播放视频url${url}，time为${time}。`);
-            this.player && this.player.loadByUrl(url, time);
-        },
-
-        /**
-         * 目前只支持H5播放器。暂不支持不同格式视频间的之间切换。暂不支持直播rtmp流切换。
-         * @param vid 视频id
-         * @param 播放凭证
-         */
-        replayByVidAndPlayAuth (vid, playauth) {
-            // console.log(`replayByVidAndPlayAuth vid${vid}，playauth为${playauth}。`);
-            this.player && this.player.replayByVidAndPlayAuth(vid, playauth);
-        },
-
-        /**
-         * 目前只支持H5播放器。暂不支持不同格式视频间的之间切换。暂不支持直播rtmp流切换。
-         * @param vid 视频id
-         * @param 播放凭证
-         * @description 仅MPS用户时使用 仅MPS用户时使用 参数顺序为：vid、accId、accSecret、stsToken、authInfo、domainRegion
-         */
-        replayByVidAndAuthInfo (vid, accId, accSecret, stsToken, authInfo, domainRegion) {
-            // console.log(`replayByVidAndAuthInfo 参数顺序为：vid、accId、accSecret、stsToken、authInfo、domainRegion`,vid, accId, accSecret, stsToken, authInfo, domainRegion);
-            this.player && this.player.replayByVidAndAuthInfo(vid, accId, accSecret, stsToken, authInfo, domainRegion);
-        },
-
-        /**
-         * 设置播放器大小w，h可分别为400px像素或60%百分比。
-         * @param w 宽度
-         * @param h 宽度
-         * @description chrome浏览器下flash播放器分别不能小于397x297。
-         */
-        setPlayerSize (w, h) {
-            // console.log(`设置播放器大小 宽度:${w},高度:${h}`);
-            this.player && this.player.setPlayerSize(w, h);
-        },
-
-        /**
-         * 手动设置播放的倍速，倍速播放仅H5支持。移动端可能会失效，比如android微信。
-         * 倍速播放UI默认是开启的。
-         * 如果自定义过skinLaout属性，需要添加speedButton项到数组里：
-         * @param h 宽度
-         * @description {name：“speedButton”，align：“tr”，x：10，y：23}
-         */
-        setSpeed (speed) {
-            // console.log(`手动设置播放的倍速:${speed}`);
-            this.player && this.player.setSpeed(speed);
-        },
-
-        /**
-         * 设置截图参数
-         * @param width 宽度
-         * @param height 高度
-         * @param rate 截图质量
-         */
-        setSanpshotProperties (width, height, rate) {
-            // console.log(`设置截图参数:`,width, height, rate);
-            this.player && this.player.setSanpshotProperties(width, height, rate);
-        },
-
-        /**
-         * 播放器全屏，仅H5支持。
-         */
-        requestFullScreen () {
-            // console.log(`播放器全屏，仅H5支持`);
-            this.player && this.player.fullscreenService && this.player.fullscreenService.requestFullScreen();
-        },
-
-        /**
-         * 播放器退出全屏，iOS调用无效，仅H5支持。
-         */
-        cancelFullScreen () {
-            // console.log(`播放器全屏，仅H5支持`);
-            this.player && this.player.fullscreenService && this.player.fullscreenService.cancelFullScreen();
-        },
-
-        /**
-         * 获取播放器全屏状态，仅H5支持。
-         */
-        getIsFullScreen () {
-            // console.log(`获取播放器全屏状态，仅H5支持。`,this.player && this.player.fullscreenService && this.player && this.player.fullscreenService.getIsFullScreen());
-            return this.player && this.player.fullscreenService && this.player.fullscreenService.getIsFullScreen();
-        },
-
-        /**
-         * 获取播放器状态，包含的值,
-         * @returns init ready loading play pause playing waiting error ended
-         */
-        getStatus () {
-            // console.log(`获取播放器状态，包含的值`,this.player && this.player.fullscreenService && this.player && this.player.fullscreenService.getStatus());
-            return this.player && this.player.getStatus();
-        },
-
-        /**
-         * 设置直播的开始结束时间，开启直播时移功能时使用。
-         * @param beginTime 开始时间
-         * @param endTime 结束时间
-         * @description 例子：player.liveShiftSerivce.setLiveTimeRange(“”，‘2018/01/04 20:00:00’)
-         */
-        setLiveTimeRange (beginTime, endTime) {
-            // console.log(`设置直播的开始时间:${beginTime},结束时间:${endTime}，开启直播时移功能时使用。`);
-            this.player && this.player.liveShiftSerivce && this.player.liveShiftSerivce.setLiveTimeRange(beginTime, endTime);
-        },
-
-        /**
-         * 参数为旋转角度， 正数为正时针旋转， 负数为逆时针旋转。
-         * @param rotate 旋转角度
-         * @description 例如: setRotate(90)。详情参见旋转和镜像。
-         */
-        setRotate (rotate) {
-            // console.log(`参数为旋转角度:${rotate}。`);
-            this.player && this.player.setRotate(rotate);
-        },
-
-        /**
-         * 获取旋转角度。详情参见旋转和镜像。
-         * @return rotate 旋转角度
-         */
-        getRotate () {
-            // console.log(`获取旋转角度:${this.player && this.player.getRotate()}`);
-            return this.player && this.player.getRotate();
-        },
-
-        /**
-         * 设置镜像
-         * @param image 镜像类型 可选值为：horizon,vertical
-         * @description 例如: setImage(‘horizon’)。详情参见旋转和镜像。
-         */
-        setImage (image) {
-            // console.log(`设置镜像:${image}。`);
-            this.player && this.player.setImage(image);
-        },
-
-        /**
-         * 播放器销毁
-         */
-        dispose () {
-            // console.log(`播放器销毁。`);
-            this.player && this.player.dispose();
-        },
-
-        /**
-         * 设置封面
-         * @param cover 封面地址
-         */
-        setCover (cover) {
-            // console.log(`设置封面:${cover}`);
-            this.player && this.player.setCover(cover);
-        },
-
-        /**
-         * 设置封面
-         * @param markers 设置打点数据
-         */
-        setProgressMarkers (markers) {
-            // console.log(`markers打点数据集合:${markers}`);
-            this.player && this.player.setProgressMarkers(markers);
-        },
-
-        /**
-         * 设置试看时间，单位为秒，详情参见
-         * @param time 试看时间
-         */
-        setPreviewTime (time) {
-            // console.log(`设置试看时间，单位为:${time}秒`);
-            this.player && this.player.setPreviewTime(time);
-        },
-
-        /**
-         * 获取试看时间
-         * @return rotate 旋转角度
-         */
-        getPreviewTime () {
-            // console.log(`获取试看时间:${this.player && this.player.getPreviewTime()}`);
-            return this.player && this.player.getPreviewTime();
-        },
-
-        /**
-         * 是否试看
-         */
-        isPreview () {
-            // console.log(`是否试看`);
-            this.player && this.player.isPreview();
-        },
-
-        /**
-         * @param ev 事件名
-         * @param handle 回调方法
-         */
-        off (ev, handle) {
-            this.player && this.player.off(ev, handle);
-        },
-
-
-        /**
-         * 深度拷贝
-         * @param {*} obj
-         */
-        deepCloneObject (obj) {
-            let objClone = Array.isArray(obj) ? [] : {};
-            if (obj && typeof obj === 'object') {
-                for (let key in obj) {
-                    if (obj.hasOwnProperty(key)) {
-                        //判断ojb子元素是否为对象，如果是，递归复制
-                        if (obj[key] && typeof obj[key] === 'object') {
-                            objClone[key] = this.deepCloneObject(obj[key]);
-                        } else {
-                            //如果不是，简单复制
-                            objClone[key] = obj[key];
-                        }
-                    }
-                }
-            }
-            return objClone;
-        }
-
-    },
-    beforeDestroy () {  //防止重复创建
-        this.dispose(); //销毁播放器(防止直播播放的情况下,播放器已经销毁,而后台还在继续下载资源造成卡顿的bug)
-        // const head = document.querySelector('head');
-        // const cssNodes = document.querySelectorAll(`link.app__aliplayer-min-css`);
-        // (html && cssNodes.length > 1) && cssNodes.forEach((item, index)=>{
-        //     if(index != 0) head.removeChild(item);
-        // });
-        // const html = document.querySelector('html');
-        // const jsNodes = document.querySelectorAll(`script.app__aliplayer-min-js`);
-        // (html && jsNodes.length > 1) && jsNodes.forEach((item, index)=>{
-        //     if(index != 0) html.removeChild(item);
-        // });
+    if (props.autoFormat && sourceFormat.value && !options.format) {
+        options.format = sourceFormat.value;
     }
-};
+
+    if (props.lowLatency && options.isLive && sourceFormat.value === 'flv') {
+        options.enableStashBufferForFlv = options.enableStashBufferForFlv ?? false;
+        options.stashInitialSizeForFlv = options.stashInitialSizeForFlv ?? 128;
+    }
+
+    return options;
+});
+
+/**
+ * 获取底层 Aliplayer 实例。
+ *
+ * @returns 当前播放器实例；尚未初始化或已销毁时返回 `null`。
+ */
+function getPlayer(): AliplayerInstance | null {
+    return player.value;
+}
+
+/**
+ * 销毁当前播放器实例。
+ *
+ * 销毁时同步清空当前格式记录，避免后续 source 切换误判为同格式切换。
+ */
+function dispose(): void {
+    if (!player.value) return;
+    player.value.dispose();
+    player.value = null;
+    currentFormat.value = null;
+}
+
+/**
+ * 将 Aliplayer 事件转发为 Vue 组件事件。
+ *
+ * @param target 底层播放器实例。
+ */
+function bindEvents(target: AliplayerInstance): void {
+    eventNames.forEach((eventName) => {
+        target.on(eventName, (event?: unknown) => {
+            emit(eventName, event);
+        });
+    });
+}
+
+/**
+ * 绑定禁止快进逻辑。
+ *
+ * 该能力通过监听 `timeupdate` 实现：如果当前播放时间比上次记录时间大幅跳跃，
+ * 视为用户拖拽快进并回退到上次位置。
+ *
+ * @param target 底层播放器实例。
+ */
+function bindForbidFastForward(target: AliplayerInstance): void {
+    if (!props.forbidFastForward) return;
+
+    let last = 0;
+    let maxTime = 0;
+    target.on('timeupdate', () => {
+        const current = target.getCurrentTime();
+        if (current - last > 2) {
+            target.seek(last);
+            return;
+        }
+
+        last = current;
+        if (last >= maxTime) {
+            maxTime = last;
+        }
+    });
+}
+
+/**
+ * 使用当前合并配置创建 Aliplayer 实例。
+ *
+ * 如果组件已卸载、SDK 未加载或容器不存在，则直接跳过。
+ */
+function initPlayer(): void {
+    if (isUnmounted.value || !window.Aliplayer || !containerRef.value) return;
+
+    dispose();
+    const nextPlayer = window.Aliplayer({ ...mergedOptions.value });
+    player.value = nextPlayer;
+    currentFormat.value = sourceFormat.value;
+    bindEvents(nextPlayer);
+    bindForbidFastForward(nextPlayer);
+}
+
+/**
+ * 加载 SDK、扩展脚本并初始化播放器。
+ *
+ * 该方法会处理统计拦截、SDK 资源加载、额外组件脚本加载和 Vue DOM 更新等待。
+ * 如果任一步失败，会通过 `sdk-error` 事件抛给业务层处理。
+ */
+async function init(): Promise<void> {
+    const token = ++initToken;
+    try {
+        if (props.disableTracking) {
+            installTrackingBlocker(props.trackingUrlPatterns.length ? props.trackingUrlPatterns : undefined);
+        }
+        await loadAliplayerSdk(resolvedCssLink.value, resolvedScriptSrc.value);
+        await loadExtraScripts(props.componentScripts);
+        await nextTick();
+        if (isUnmounted.value || token !== initToken) return;
+        initPlayer();
+    } catch (error) {
+        emit('sdk-error', error instanceof Error ? error : new Error(String(error)));
+    }
+}
+
+/**
+ * 局部重载播放器。
+ *
+ * @param nextSource 可选的新播放源。传入且播放器已存在时直接调用 `loadByUrl`。
+ */
+async function reload(nextSource?: string): Promise<void> {
+    if (nextSource && player.value) {
+        player.value.loadByUrl(props.normalizeSourceUrl ? normalizeSource(nextSource) || nextSource : nextSource);
+        return;
+    }
+
+    await init();
+}
+
+/**
+ * 播放失败时的业务重试入口。
+ *
+ * 当前行为等价于 `reload`，但命名更贴合 `error` 回调中的使用语义。
+ *
+ * @param nextSource 可选的新播放源。
+ */
+async function retry(nextSource?: string): Promise<void> {
+    await reload(nextSource);
+}
+
+/**
+ * 播放视频。
+ */
+function play(): void {
+    player.value?.play();
+}
+
+/**
+ * 暂停视频。
+ */
+function pause(): void {
+    player.value?.pause();
+}
+
+/**
+ * 从头重播视频。
+ */
+function replay(): void {
+    player.value?.replay();
+}
+
+/**
+ * 跳转到指定时间。
+ *
+ * @param time 秒数。
+ */
+function seek(time: number): void {
+    player.value?.seek(time);
+}
+
+/**
+ * 获取当前播放时间。
+ *
+ * @returns 当前播放时间，单位秒。
+ */
+function getCurrentTime(): number | undefined {
+    return player.value?.getCurrentTime();
+}
+
+/**
+ * 获取视频总时长。
+ *
+ * @returns 视频总时长，单位秒。
+ */
+function getDuration(): number | undefined {
+    return player.value?.getDuration();
+}
+
+/**
+ * 获取当前音量。
+ *
+ * @returns 音量值，通常为 0 到 1。
+ */
+function getVolume(): number | undefined {
+    return player.value?.getVolume();
+}
+
+/**
+ * 设置当前音量。
+ *
+ * @param volume 音量值，通常为 0 到 1。
+ */
+function setVolume(volume: number): void {
+    player.value?.setVolume(volume);
+}
+
+/**
+ * 使用 URL 切换播放源。
+ *
+ * @param url 播放源地址。
+ * @param time 可选起播时间，单位秒。
+ */
+function loadByUrl(url: string, time?: number): void {
+    player.value?.loadByUrl(url, time);
+}
+
+/**
+ * 使用 VID + PlayAuth 重新播放。
+ *
+ * @param vid 视频 ID。
+ * @param playauth 播放凭证。
+ */
+function replayByVidAndPlayAuth(vid: string, playauth: string): void {
+    player.value?.replayByVidAndPlayAuth(vid, playauth);
+}
+
+/**
+ * 使用 MPS 鉴权信息重新播放。
+ *
+ * @param vid 视频 ID。
+ * @param accId 访问密钥 ID。
+ * @param accSecret 访问密钥 Secret。
+ * @param stsToken STS Token。
+ * @param authInfo 鉴权信息。
+ * @param domainRegion 域名地域。
+ */
+function replayByVidAndAuthInfo(
+    vid: string,
+    accId: string,
+    accSecret: string,
+    stsToken: string,
+    authInfo: string,
+    domainRegion: string
+): void {
+    player.value?.replayByVidAndAuthInfo(vid, accId, accSecret, stsToken, authInfo, domainRegion);
+}
+
+/**
+ * 设置播放器尺寸。
+ *
+ * @param width 宽度，例如 `100%` 或 `640px`。
+ * @param height 高度，例如 `360px`。
+ */
+function setPlayerSize(width: string, height: string): void {
+    player.value?.setPlayerSize(width, height);
+}
+
+/**
+ * 设置播放倍速。
+ *
+ * @param speed 倍速值，例如 `1.25`、`1.5`、`2`。
+ */
+function setSpeed(speed: number): void {
+    player.value?.setSpeed(speed);
+}
+
+/**
+ * 设置截图参数。
+ *
+ * 方法名保留阿里云 SDK 原始拼写 `setSanpshotProperties`，避免破坏旧版本 API。
+ *
+ * @param width 截图宽度。
+ * @param height 截图高度。
+ * @param rate 截图质量。
+ */
+function setSanpshotProperties(width: number, height: number, rate: number): void {
+    player.value?.setSanpshotProperties(width, height, rate);
+}
+
+/**
+ * 请求进入全屏。
+ */
+function requestFullScreen(): void {
+    player.value?.fullscreenService?.requestFullScreen();
+}
+
+/**
+ * 退出全屏。
+ */
+function cancelFullScreen(): void {
+    player.value?.fullscreenService?.cancelFullScreen();
+}
+
+/**
+ * 获取当前是否处于全屏。
+ *
+ * @returns 是否全屏；当前 SDK 不支持或播放器未初始化时返回 `undefined`。
+ */
+function getIsFullScreen(): boolean | undefined {
+    return player.value?.fullscreenService?.getIsFullScreen();
+}
+
+/**
+ * 获取播放器状态。
+ *
+ * @returns Aliplayer 状态字符串。
+ */
+function getStatus(): string | undefined {
+    return player.value?.getStatus();
+}
+
+/**
+ * 设置直播时移范围。
+ *
+ * @param beginTime 起始时间。
+ * @param endTime 结束时间。
+ */
+function setLiveTimeRange(beginTime: string, endTime: string): void {
+    player.value?.liveShiftSerivce?.setLiveTimeRange(beginTime, endTime);
+}
+
+/**
+ * 设置视频旋转角度。
+ *
+ * @param rotate 旋转角度，正数为顺时针。
+ */
+function setRotate(rotate: number): void {
+    player.value?.setRotate(rotate);
+}
+
+/**
+ * 获取视频旋转角度。
+ */
+function getRotate(): number | undefined {
+    return player.value?.getRotate();
+}
+
+/**
+ * 设置视频镜像方向。
+ *
+ * @param image 镜像类型，例如 `horizon` 或 `vertical`。
+ */
+function setImage(image: string): void {
+    player.value?.setImage(image);
+}
+
+/**
+ * 设置播放器封面图。
+ *
+ * @param cover 封面图地址。
+ */
+function setCover(cover: string): void {
+    player.value?.setCover(cover);
+}
+
+/**
+ * 设置进度条打点。
+ *
+ * @param markers 打点配置数组。
+ */
+function setProgressMarkers(markers: unknown[]): void {
+    player.value?.setProgressMarkers(markers);
+}
+
+/**
+ * 设置试看时间。
+ *
+ * @param time 试看时间，单位秒。
+ */
+function setPreviewTime(time: number): void {
+    player.value?.setPreviewTime(time);
+}
+
+/**
+ * 获取试看时间。
+ */
+function getPreviewTime(): number | undefined {
+    return player.value?.getPreviewTime();
+}
+
+/**
+ * 判断当前是否为试看状态。
+ */
+function isPreview(): boolean | undefined {
+    return player.value?.isPreview();
+}
+
+/**
+ * 取消监听底层播放器事件。
+ *
+ * @param eventName 事件名。
+ * @param handler 需要取消的回调函数。
+ */
+function off(eventName: string, handler: (event?: unknown) => void): void {
+    player.value?.off?.(eventName, handler);
+}
+
+onMounted(() => {
+    void init();
+});
+
+watch(
+    () => normalizedSource.value,
+    (source) => {
+        if (!source) return;
+        const nextFormat = inferSourceFormat(source);
+        if (player.value && nextFormat && nextFormat === currentFormat.value) {
+            player.value.loadByUrl(source);
+            return;
+        }
+        void init();
+    }
+);
+
+watch(
+    () => [
+        props.options,
+        props.forbidFastForward,
+        props.license,
+        props.lowLatency,
+        props.autoFormat,
+        props.sdkVersion,
+        props.cssLink,
+        props.scriptSrc,
+        props.componentScripts,
+        props.disableTracking,
+        props.trackingUrlPatterns
+    ],
+    () => {
+        void init();
+    },
+    { deep: true }
+);
+
+onBeforeUnmount(() => {
+    isUnmounted.value = true;
+    initToken += 1;
+    dispose();
+});
+
+defineExpose<VueAliplayerV2Expose>({
+    getPlayer,
+    init,
+    initPlayer,
+    reload,
+    retry,
+    play,
+    pause,
+    replay,
+    seek,
+    getCurrentTime,
+    getDuration,
+    getVolume,
+    setVolume,
+    loadByUrl,
+    replayByVidAndPlayAuth,
+    replayByVidAndAuthInfo,
+    setPlayerSize,
+    setSpeed,
+    setSanpshotProperties,
+    requestFullScreen,
+    cancelFullScreen,
+    getIsFullScreen,
+    getStatus,
+    setLiveTimeRange,
+    setRotate,
+    getRotate,
+    setImage,
+    dispose,
+    setCover,
+    setProgressMarkers,
+    setPreviewTime,
+    getPreviewTime,
+    isPreview,
+    off
+});
 </script>
+
+<style scoped>
+.vue-aliplayer-v2 {
+    width: 100%;
+}
+</style>

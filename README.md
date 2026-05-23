@@ -1,512 +1,551 @@
-# vue-alipayer-v2
+# vue-aliplayer-v2
 
-## 感谢每一位支持开源的朋友. 这是一个基于 Alipayer 开发并封装成 vue 组件的播放器.
+[English](./README.en-US.md) | 简体中文
 
-### vue 中使用 Alipayer,播放 rtmp,m3u8,mp4 视频
+基于阿里云 Web 播放器 Aliplayer SDK 的 Vue 3 播放器组件。v2 使用 Vue 3、TypeScript 和 Vite 重构，支持 URL 播放、VID + PlayAuth、STS、直播、低延迟 FLV、自动格式推断、License 注入、扩展组件脚本、多实例和常用播放器实例方法。
 
-#### [本项目在线演示](https://langyuxiansheng.github.io/vue-aliplayer-v2/)
+> v2 不再兼容 Vue 2。Vue 2 项目请继续安装 `vue-aliplayer-v2@1.x`。
 
-#### [阿里云播放器在线演示](https://player.alicdn.com/aliplayer/index.html)
+## 在线演示
 
-> 假如此轮子对你有帮助,请顺手 star 一下吧.o(_￣︶￣_)o
+- 项目 demo：https://langyuxiansheng.github.io/vue-aliplayer-v2/
+- 阿里云播放器官方演示：https://player.alicdn.com/aliplayer/index.html
+- 阿里云播放器接入文档：https://help.aliyun.com/zh/vod/developer-reference/integration
 
-## 1.安装使用! 下载安装 npm 包
+## 特性
+
+- Vue 3 组件和插件安装方式，支持 `app.use(VueAliplayerV2, options)`。
+- TypeScript 类型导出，包含 props、options、事件、播放器实例和 ref 暴露方法。
+- 默认加载阿里云 `imp-web-player` SDK 2.37.0，也可以自定义 CSS/JS 地址。
+- 支持 `source` URL、`options.source`、VID + PlayAuth、STS 鉴权配置。
+- 自动识别 `mp4`、`m3u8`、`flv`、`mp3`、`rtmp` 播放格式。
+- FLV 直播低延迟预设，可按业务需要覆盖 stash buffer 配置。
+- 支持 License 配置，适配新版 Aliplayer Web 播放器要求。
+- 支持多播放器共存，SDK 资源只加载一次。
+- 支持额外加载自定义组件脚本，便于接入播放列表、水印、跑马灯等 Aliplayer 扩展。
+- 提供可选的已知 track 上报拦截能力。
+
+## 安装
 
 ```bash
-npm i vue-aliplayer-v2 --save
-or
+npm install vue-aliplayer-v2
+```
+
+```bash
 yarn add vue-aliplayer-v2
 ```
 
-#### 全局注册 main.js
-
-```javascript
-import VueAliplayerV2 from "vue-aliplayer-v2";
-
-Vue.use(VueAliplayerV2);
-
-//可选全局配置
-//Vue.use(VueAliplayerV2,{
-// cssLink: 'https://g.alicdn.com/de/prismplayer/2.8.2/skins/default/aliplayer-min.css',
-// scriptSrc: 'https://g.alicdn.com/de/prismplayer/2.8.2/aliplayer-min.js'
-//});
+```bash
+pnpm add vue-aliplayer-v2
 ```
 
-#### 局部注册 App.vue
+## 快速开始
 
-```javascript
-//推荐第一种(仅v1.2.3)及以上的版本可用
-import VueAliplayerV2 from "vue-aliplayer-v2";
-components: {
-  VueAliplayerV2;
-}
+### 全局注册
 
-//或者
-components: {
-  VueAliplayerV2: VueAliplayerV2.Player;
-}
+```ts
+import { createApp } from 'vue';
+import App from './App.vue';
+import VueAliplayerV2 from 'vue-aliplayer-v2';
+
+const app = createApp(App);
+
+app.use(VueAliplayerV2, {
+    sdkVersion: '2.37.0'
+});
+
+app.mount('#app');
 ```
 
-## 2.组件中使用
-
-### 组件模板使用,下面的视频连接仅供演示测试.
-
-```html
+```vue
 <template>
-  <div id="app">
-    <template v-if="!isShowMultiple && show">
-      <vue-aliplayer-v2
+    <VueAliplayerV2
+        source="//player.alicdn.com/video/aliyunmedia.mp4"
+        :options="{ autoplay: true, useH5Prism: true }"
+    />
+</template>
+```
+
+### 局部引入
+
+```vue
+<template>
+    <VueAliplayerV2
+        ref="playerRef"
         :source="source"
-        ref="VueAliplayerV2"
         :options="options"
-      />
-    </template>
-    <div v-if="isShowMultiple && show" class="show-multiple">
-      <template v-for="x in 5">
-        <vue-aliplayer-v2
-          class="multiple-player"
-          :key="x"
-          :source="source"
-          ref="VueAliplayerV2"
-          :options="options"
-        />
-      </template>
-    </div>
-    <p class="remove-text" v-if="!show">播放器已销毁!</p>
-    <div class="player-btns">
-      <template v-if="!isShowMultiple && show">
-        <span @click="play()">播放</span>
-        <span @click="pause()">暂停</span>
-        <span @click="replay()">重播</span>
-        <span @click="getCurrentTime()">播放时刻</span>
-        <span @click="getStatus()">获取播放器状态</span>
-      </template>
-      <span @click="show = !show">{{ show ? '销毁' : '重载' }}</span>
-      <span @click="options.isLive = !options.isLive"
-        >{{ options.isLive ? '切换普通模式' : '切换直播模式' }}</span
-      >
-      <span @click="showMultiple()"
-        >{{isShowMultiple ? '显示1个播放器' : '显示多个播放器'}}</span
-      >
-    </div>
-    <div class="source-box">
-      <span class="source-label">选择播放源(支持动态切换):</span>
-      <select v-model="source" name="source" id="source">
-        <option value="//player.alicdn.com/video/aliyunmedia.mp4"
-          >播放源1</option
-        >
-        <option value="//yunqivedio.alicdn.com/user-upload/nXPDX8AASx.mp4"
-          >播放源2</option
-        >
-        <option
-          value="//tbm-auth.alicdn.com/e7qHgLdugbzzKh2eW0J/kXTgBkjvNXcERYxh2PA@@hd_hq.mp4?auth_key=1584519814-0-0-fc98b2738f331ff015f7bf5c62394888"
-          >播放源3</option
-        >
-        <option value="//ivi.bupt.edu.cn/hls/cctv1.m3u8">直播播放源4</option>
-      </select>
-    </div>
-    <div class="source-box">
-      <span class="source-label">输入播放源(支持动态切换):</span>
-      <input class="source-input" type="text" v-model="source" />
-    </div>
-  </div>
+        :license="license"
+        low-latency
+        @ready="handleReady"
+        @error="handleError"
+        @sdk-error="handleSdkError"
+    />
 </template>
-<script>
-  export default {
-    data() {
-      return {
-        options: {
-          // source:'//player.alicdn.com/video/aliyunmedia.mp4',
-          isLive: true, //切换为直播流的时候必填
-          // format: 'm3u8'  //切换为直播流的时候必填
-        },
-        source: "//player.alicdn.com/video/aliyunmedia.mp4",
-        // source: '//ivi.bupt.edu.cn/hls/cctv1.m3u8',
-        show: true,
-        isShowMultiple: false,
-      };
-    },
 
-    methods: {
-      play() {
-        this.$refs.VueAliplayerV2.play();
-      },
+<script setup lang="ts">
+import { reactive, ref } from 'vue';
+import VueAliplayerV2, {
+    type AliplayerLicense,
+    type AliplayerOptions,
+    type VueAliplayerV2Expose
+} from 'vue-aliplayer-v2';
 
-      pause() {
-        this.$refs.VueAliplayerV2.pause();
-      },
+const playerRef = ref<VueAliplayerV2Expose | null>(null);
 
-      replay() {
-        this.$refs.VueAliplayerV2.replay();
-      },
+const source = ref('//player.alicdn.com/video/aliyunmedia.mp4');
 
-      getCurrentTime() {
-        // this.$refs.VueAliplayerV2.getCurrentTime();
-        this.source = "http://ivi.bupt.edu.cn/hls/cctv1.m3u8";
-      },
+const license = ref<AliplayerLicense | null>({
+    domain: 'example.com',
+    key: 'your-license-key'
+});
 
-      getStatus() {
-        const status = this.$refs.VueAliplayerV2.getStatus();
-        console.log(`getStatus:`, status);
-        alert(`getStatus:${status}`);
-      },
+const options = reactive<AliplayerOptions>({
+    autoplay: true,
+    isLive: false,
+    useH5Prism: true,
+    playsinline: true,
+    width: '100%',
+    height: '420px',
+    controlBarVisibility: 'hover'
+});
 
-      showMultiple() {
-        this.isShowMultiple = !this.isShowMultiple;
-      },
-    },
-  };
+function handleReady() {
+    playerRef.value?.play();
+}
+
+function handleError(error: unknown) {
+    console.log('player error', error);
+}
+
+function handleSdkError(error: Error) {
+    console.log('sdk load error', error.message);
+}
 </script>
-<style lang="less">
-  * {
-    margin: 0;
-    padding: 0;
-  }
-  .remove-text {
-    text-align: center;
-    padding: 20px;
-    font-size: 24px;
-  }
-  .show-multiple {
-    display: flex;
-    .multiple-player {
-      width: calc(100% / 4);
-      margin: 20px;
-    }
-  }
-  .player-btns {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    span {
-      margin: 0 auto;
-      display: inline-block;
-      padding: 5px 10px;
-      width: 150px;
-      height: 40px;
-      line-height: 40px;
-      border: 1px solid #eee;
-      background: #e1e1e1;
-      border-radius: 10px;
-      text-align: center;
-      margin: 5px;
-      cursor: pointer;
-    }
-  }
-  .source-box {
-    padding: 5px 10px;
-    margin-bottom: 20px;
-    .source-label {
-      margin-right: 20px;
-      font-size: 16px;
-      display: block;
-    }
-    #source {
-      margin-top: 10px;
-    }
-    .source-input {
-      margin-top: 10px;
-      padding: 5px 10px;
-      width: 80%;
-      border: 1px solid #ccc;
-    }
-  }
-</style>
 ```
 
-## 3.功能与配置
+## Vue 插件配置
 
-```javascript
-props:{
+`app.use(VueAliplayerV2, options)` 会设置全局默认值。单个组件传入同名 prop 时，会覆盖全局默认值。
 
-    forbidFastForward: {    //禁止拖拽快进
-            required: false,
-            type: [Boolean],
-            default: false
-    },
-    
-    options: {  //配置项 (options.source 不支持动态切换,需要动态切换请直接使用source)
-        required: false,
-        type: [Object],
-        default: () => null
-    },
+```ts
+app.use(VueAliplayerV2, {
+    sdkVersion: '2.37.0',
+    cssLink: 'https://g.alicdn.com/apsara-media-box/imp-web-player/2.37.0/skins/default/aliplayer-min.css',
+    scriptSrc: 'https://g.alicdn.com/apsara-media-box/imp-web-player/2.37.0/aliplayer-min.js',
+    componentScripts: ['/aliplayer-components/watermark.js'],
+    disableTracking: false,
+    trackingUrlPatterns: ['newplayer/track']
+});
+```
 
-    source: {  //播放源(此属性存在则优先于options.source) 支持动态切换,目前只支持同种格式（mp4/flv/m3u8）之间切换。暂不支持直播rtmp流切换。
-        required: false,
-        type: [Object],
-        default: () => null
-    },
+| 名称 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `sdkVersion` | `string` | `2.37.0` | 阿里云 Web 播放器 SDK 版本。未传 `cssLink` 或 `scriptSrc` 时用于生成官方资源地址。 |
+| `cssLink` | `string` | 2.37.0 官方 CSS | 自定义 Aliplayer CSS 地址。 |
+| `scriptSrc` | `string` | 2.37.0 官方 JS | 自定义 Aliplayer JS 地址。 |
+| `componentScripts` | `string[]` | `[]` | 自定义组件或业务扩展脚本地址列表。 |
+| `disableTracking` | `boolean` | `false` | 是否启用已知 Aliplayer 统计上报拦截。 |
+| `trackingUrlPatterns` | `Array<string \| RegExp>` | `['newplayer/track']` | 需要拦截的统计上报 URL 片段或正则。 |
 
-    cssLink:{   //css版本源
-        required: false,
-        type: [String],
-        default: `https://g.alicdn.com/de/prismplayer/2.9.7/skins/default/aliplayer-min.css`
-    },
-    scriptSrc:{ //js版本源
-        required: false,
-        type: [String],
-        default: `https://g.alicdn.com/de/prismplayer/2.9.7/aliplayer-min.js`
-    }
+## Props
+
+| 名称 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `source` | `string \| null` | `null` | 播放源 URL。存在时优先于 `options.source`。同格式变更优先调用 `loadByUrl`，跨格式变更会重建播放器。 |
+| `options` | `AliplayerOptions \| null` | `null` | 透传给 Aliplayer 的初始化配置。组件会补充 `id`、`source`、`license`、`format` 和低延迟默认值。 |
+| `license` | `AliplayerLicense \| null` | `null` | Aliplayer License 配置，优先级高于 `options.license`。 |
+| `autoFormat` | `boolean` | `true` | 是否根据 `source` 自动推断 `format`。 |
+| `lowLatency` | `boolean` | `false` | 是否启用 FLV 直播低延迟预设。 |
+| `normalizeSourceUrl` | `boolean` | `true` | 是否对播放源执行 `encodeURI`，用于处理中文、空格等未编码地址。 |
+| `forbidFastForward` | `boolean` | `false` | 是否禁止拖拽快进。 |
+| `sdkVersion` | `string` | 全局配置 | 覆盖当前组件使用的 SDK 版本。 |
+| `cssLink` | `string` | 全局配置 | 覆盖当前组件使用的 CSS 地址。 |
+| `scriptSrc` | `string` | 全局配置 | 覆盖当前组件使用的 JS 地址。 |
+| `componentScripts` | `string[]` | 全局配置 | 当前组件初始化前需要加载的扩展脚本。 |
+| `disableTracking` | `boolean` | 全局配置 | 当前组件是否启用 track 拦截。 |
+| `trackingUrlPatterns` | `Array<string \| RegExp>` | 全局配置 | 当前组件的 track 拦截规则。 |
+
+## AliplayerOptions 常用字段
+
+`options` 会完整透传给 Aliplayer SDK，因此可以继续使用官方文档中的配置项。组件类型中内置了以下常用字段，并保留索引签名支持官方新增字段。
+
+| 名称 | 类型 | 说明 |
+| --- | --- | --- |
+| `source` | `string` | 播放源 URL。 |
+| `width` | `string` | 播放器宽度，例如 `100%`。 |
+| `height` | `string` | 播放器高度，例如 `420px`。 |
+| `autoplay` | `boolean` | 是否自动播放。 |
+| `isLive` | `boolean` | 是否为直播。 |
+| `format` | `string` | 播放格式，例如 `mp4`、`m3u8`、`flv`。 |
+| `license` | `AliplayerLicense` | Aliplayer License 配置。 |
+| `vid` | `string` | 点播视频 ID。 |
+| `playauth` | `string` | 点播播放凭证。 |
+| `authTimeout` | `number` | 播放地址有效时长，单位秒。 |
+| `region` | `string` | STS 媒资地域，例如 `cn-shanghai`。 |
+| `accessKeyId` | `string` | STS 临时 AccessKey ID。 |
+| `accessKeySecret` | `string` | STS 临时 AccessKey Secret。 |
+| `securityToken` | `string` | STS 安全令牌。 |
+| `components` | `unknown[]` | Aliplayer 自定义组件配置。 |
+| `enableStashBufferForFlv` | `boolean` | FLV 是否启用 stash buffer。 |
+| `stashInitialSizeForFlv` | `number` | FLV 初始缓存大小。 |
+| `rtsVersion` | `string` | RTS SDK 版本。 |
+
+## 事件
+
+组件会透传常用 Aliplayer 事件，并额外提供 `sdk-error`。
+
+| 事件名 | 参数 | 说明 |
+| --- | --- | --- |
+| `ready` | `unknown` | 播放器初始化完成。 |
+| `play` | `unknown` | 开始播放。 |
+| `pause` | `unknown` | 暂停播放。 |
+| `canplay` | `unknown` | 可以播放。 |
+| `playing` | `unknown` | 正在播放。 |
+| `ended` | `unknown` | 播放结束。 |
+| `liveStreamStop` | `unknown` | 直播流停止。 |
+| `onM3u8Retry` | `unknown` | M3U8 重试事件。 |
+| `hideBar` | `unknown` | 控制栏隐藏。 |
+| `showBar` | `unknown` | 控制栏显示。 |
+| `waiting` | `unknown` | 播放等待。 |
+| `timeupdate` | `unknown` | 播放进度更新。 |
+| `snapshoted` | `unknown` | 截图完成。 |
+| `requestFullScreen` | `unknown` | 进入全屏。 |
+| `cancelFullScreen` | `unknown` | 退出全屏。 |
+| `error` | `unknown` | 播放器运行时错误。 |
+| `startSeek` | `unknown` | 开始 seek。 |
+| `completeSeek` | `unknown` | seek 完成。 |
+| `sdk-error` | `Error` | SDK CSS、JS 或扩展脚本加载失败。 |
+
+## Ref 方法
+
+通过 `ref<VueAliplayerV2Expose | null>` 可以访问组件暴露的方法。
+
+```ts
+playerRef.value?.play();
+playerRef.value?.pause();
+playerRef.value?.seek(30);
+playerRef.value?.setVolume(0.8);
+playerRef.value?.loadByUrl('//player.alicdn.com/video/aliyunmedia.mp4');
+playerRef.value?.requestFullScreen();
+playerRef.value?.retry();
+```
+
+| 方法 | 说明 |
+| --- | --- |
+| `getPlayer()` | 获取底层 Aliplayer 实例。 |
+| `init()` | 加载 SDK 并初始化播放器。 |
+| `initPlayer()` | 使用当前 props/options 创建播放器实例。 |
+| `reload(nextSource?)` | 重载播放器，可传入新的播放源。 |
+| `retry(nextSource?)` | 播放失败后的业务重试入口。 |
+| `play()` | 播放。 |
+| `pause()` | 暂停。 |
+| `replay()` | 从头重播。 |
+| `seek(time)` | 跳转到指定秒数。 |
+| `getCurrentTime()` | 获取当前播放时间。 |
+| `getDuration()` | 获取视频总时长。 |
+| `getVolume()` | 获取音量。 |
+| `setVolume(volume)` | 设置音量。 |
+| `loadByUrl(url, time?)` | 使用 URL 切换播放源。 |
+| `replayByVidAndPlayAuth(vid, playauth)` | 使用 VID + PlayAuth 重新播放。 |
+| `replayByVidAndAuthInfo(...)` | 使用 MPS 鉴权信息重新播放。 |
+| `setPlayerSize(width, height)` | 设置播放器尺寸。 |
+| `setSpeed(speed)` | 设置播放倍速。 |
+| `setSanpshotProperties(width, height, rate)` | 设置截图参数。方法名沿用阿里云 SDK 拼写。 |
+| `requestFullScreen()` | 进入全屏。 |
+| `cancelFullScreen()` | 退出全屏。 |
+| `getIsFullScreen()` | 获取是否处于全屏。 |
+| `getStatus()` | 获取播放器状态。 |
+| `setLiveTimeRange(beginTime, endTime)` | 设置直播时移可播放范围。 |
+| `setRotate(rotate)` | 设置视频旋转角度。 |
+| `getRotate()` | 获取视频旋转角度。 |
+| `setImage(image)` | 设置视频镜像。 |
+| `dispose()` | 销毁播放器。 |
+| `setCover(cover)` | 设置封面图。 |
+| `setProgressMarkers(markers)` | 设置进度条打点。 |
+| `setPreviewTime(time)` | 设置试看时间。 |
+| `getPreviewTime()` | 获取试看时间。 |
+| `isPreview()` | 判断是否处于试看状态。 |
+| `off(eventName, handler)` | 取消监听底层播放器事件。 |
+
+## 使用示例
+
+### URL 播放
+
+```vue
+<VueAliplayerV2
+    source="//player.alicdn.com/video/aliyunmedia.mp4"
+    :options="{
+        autoplay: true,
+        useH5Prism: true,
+        width: '100%',
+        height: '420px'
+    }"
+/>
+```
+
+### VID + PlayAuth
+
+```vue
+<VueAliplayerV2
+    :options="{
+        vid: '<your-video-id>',
+        playauth: '<your-playauth>',
+        authTimeout: 7200,
+        width: '100%',
+        height: '420px'
+    }"
+/>
+```
+
+`VID + PlayAuth` 是初始化配置，不需要再传 `source`。如果要在播放器创建后切换，可以调用：
+
+```ts
+playerRef.value?.replayByVidAndPlayAuth(vid, playauth);
+```
+
+### STS
+
+```vue
+<VueAliplayerV2
+    :options="{
+        vid: '<your-video-id>',
+        region: 'cn-shanghai',
+        accessKeyId: '<temporary-access-key-id>',
+        accessKeySecret: '<temporary-access-key-secret>',
+        securityToken: '<temporary-security-token>',
+        width: '100%',
+        height: '420px'
+    }"
+/>
+```
+
+### FLV 直播和低延迟
+
+```vue
+<VueAliplayerV2
+    source="//example.com/live.flv"
+    low-latency
+    :options="{
+        isLive: true,
+        autoplay: true,
+        width: '100%',
+        height: '420px'
+    }"
+/>
+```
+
+开启 `low-latency` 后，如果当前播放源格式为 `flv` 且 `options.isLive = true`，组件会默认补充：
+
+```ts
+{
+    enableStashBufferForFlv: false,
+    stashInitialSizeForFlv: 128
 }
 ```
 
-### 3.1 配置项 options 属性
+如果业务需要其他缓存策略，可以直接在 `options` 中覆盖。
 
-可以参考 [属性和接口说明](https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1085.36fc6fc57WKZ5P)
+### 直播时移
 
-| 名称                     |     类型      | 说明                                                                                                                                                                               |
-| :----------------------- | :-----------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| source                   |    String     | 视频播放地址 url：单独 url。默认状态，表示使用 vid+playauth。source 播放方式优先级最高。source 支持多清晰度设置：source:’{“HD”:”address1”,”SD”:”address2”’，详情参见多清晰度播放。 |
-| vid                      |    String     | 媒体转码服务的媒体 Id。                                                                                                                                                            |
-| playauth                 |    String     | 播放权证，如何得到参见获取 playauth。                                                                                                                                              |
-| height                   |    String     | 播放器高度，可形如‘100%’或者‘100px’,chrome 浏览器下 flash 播放器分别不能小于 397x297。                                                                                             |
-| width                    |    String     | 播放器宽度，可形如‘100%’或者‘100px’,chrome 浏览器下 flash 播放器分别不能小于 397x297。                                                                                             |
-| videoWidth               |    String     | 视频宽度，仅 h5 支持。详情参见旋转和镜像。                                                                                                                                         |
-| videoHeight              |    String     | 视频高度，仅 h5 支持。详情参见旋转和镜像。                                                                                                                                         |
-| preload                  |    Boolean    | 播放器自动加载，目前仅 h5 可用。                                                                                                                                                   |
-| cover                    |    String     | 播放器默认封面图片，请填写正确的图片 url 地址。需要 autoplay 为’false’时，才生效。Flash 播放器封面也需要开启允许跨域访问。                                                         |
-| isLive                   |    Boolean    | 播放内容是否为直播，直播时会禁止用户拖动进度条。                                                                                                                                   |
-| autoplay                 |    Boolean    | 播放器是否自动播放，在移动端 autoplay 属性会失效。Safari11 不会自动开启自动播放如何开启。                                                                                          |
-| rePlay                   |    Boolean    | 播放器自动循环播放。                                                                                                                                                               |
-| useH5Prism               |    Boolean    | 指定使用 H5 播放器。                                                                                                                                                               |
-| useFlashPrism            |    Boolean    | 指定使用 Flash 播放器。                                                                                                                                                            |
-| playsinline              |    Boolean    | H5 是否内置播放，有的 Android 浏览器不起作用。                                                                                                                                     |
-| showBuffer               |    Boolean    | 显示播放时缓冲图标，默认 true。                                                                                                                                                    |
-| skinRes                  |      Url      | 说明：皮肤图片，不建议随意修改该字段，如要修改，请参照皮肤定制。                                                                                                                   |
-| skinLayout               | Array Boolean | 说明：功能组件布局配置，不传该字段使用默认布局。传 false 隐藏所有功能组件，请参照皮肤定制。                                                                                        |
-| controlBarVisibility     |    String     | 控制面板的实现，默认为‘hover’。可选的值为：‘click’、‘hover’、‘always’。                                                                                                            |
-| showBarTime              |    String     | 控制栏自动隐藏时间（ms）。                                                                                                                                                         |
-| extraInfo                |    String     | 说明：JSON 串用于定制性接口参数。                                                                                                                                                  |
-| >                        |       >       | 1.“fullTitle”：“测试页面”全屏时显示视频标题（仅 flash 支持）。                                                                                                                     |
-| >                        |       >       | 2. “m3u8BufferLength”：“30”播放 m3u8 时加载缓存 ts 文件长度单位（秒）（仅 flash 支持）。                                                                                           |
-| >                        |       >       | 3. “liveStartTime”：“2016/08/17 12:00:00”,直播开始时间，用于提示直播未开始(仅 flash 支持)。                                                                                        |
-| >                        |       >       | 4. “liveOverTime”：“2016/08/17 14:00:00”,直播结束时间，用于提示直播结束（仅 flash 支持）。                                                                                         |
-| enableSystemMenu         |    Boolean    | 是否允许系统右键菜单显示，默认为 false。                                                                                                                                           |
-| format                   |    String     | 指定播放地址格式，只有使用 vid 的播放方式时支持,可选值为’mp4’、’m3u8’、’flv’、’mp3’，默认为空，仅 H5 支持。                                                                        |
-| mediaType                |    String     | 指定返回音频还是视频，只有使用 vid 的播放方式时支持。可选值为’video’和’audio’，默认为’video’,‘audio’主要是针对只包含音频的视频格式，比如音频的 mp4，仅 H5 支持。                   |
-| qualitySort              |    String     | 指定排序方式，只有使用 vid + plauth 播放方式时支持。‘desc’表示按倒序排序（即：从大到小排序）,‘asc’表示按正序排序（即：从小到大排序）,默认值：‘asc’，仅 H5 支持。                   |
-| definition               |    String     | 显示视频清晰度，多个用逗号分隔，比如：’FD,LD’，此值是 vid 对应流清晰度的一个子集，取值范围：FD（流畅）LD（标清）SD（高清）HD（超清）OD（原画）2K（2K）4K（4K），仅 H5 支持。       |
-| defaultDefinition        |    String     | 默认视频清晰度，此值是 vid 对应流的一个清晰度，取值范围：FD（流畅）LD（标清）SD（高清）HD（超清）OD（原画）2K（2K）4K（4K）,仅 H5 支持。                                           |
-| x5_type                  |    String     | 声明启用同层 H5 播放器，启用时设置的值为‘h5’,详情参见同层播放。                                                                                                                    |
-| x5_fullscreen            |    Boolean    | 声明视频播放时是否进入到 TBS 的全屏模式，默认为 false。当需要把视频做为背景时，设置为 true,详情参见同层播放。                                                                      |
-| x5_video_position        |    String     | 声明视频播在界面上的位置，默认为“center”。可选值为：“top”，“center”,详情参见同层播放。                                                                                             |
-| x5_orientation           |    String     | 声明 TBS 播放器支持的方向，可选值：landscape：横屏,portraint：竖屏,详情参见同层播放。                                                                                              |
-| x5LandscapeAsFullScreen  |    String     | 声明 TBS 全屏播放是否横屏，默认值为 true。                                                                                                                                         |
-| autoPlayDelay            |    Number     | 延迟播放时间，单位为秒。详情参见延迟播放                                                                                                                                           |
-| autoPlayDelayDisplayText |    String     | 延迟播放提示文本，详情参见延迟播放。                                                                                                                                               |
-| language                 |    String     | 国际化，默认为‘zh-cn’。如果未设置，则采用浏览器语言。可选值为‘zh-cn’、‘en-us’或其它值。                                                                                            |
-| languageTexts            |     JSON      | 自定义国际化文本 json 结构，key 的值需要和 language 属性值对应起来。例子：{jp:{Play:”Play”}},自定义值参见 Json 结构。                                                              |
-| snapshot                 |    Boolean    | flash 启用截图功能。                                                                                                                                                               |
-| snapshotWatermark        |    Object     | H5 设置截图水印。                                                                                                                                                                  |
-| useHlsPluginForSafari    |    Boolean    | Safari 浏览器可以启用 Hls 插件播放，Safari 11 除外。                                                                                                                               |
-| enableStashBufferForFlv  |    Boolean    | H5 播放 flv 时，设置是否启用播放缓存，只在直播下起作用。                                                                                                                           |
-| stashInitialSizeForFlv   |    Number     | H5 播放 flv 时，初始缓存大小，只在直播下起作用。                                                                                                                                   |
-| loadDataTimeout          |    Number     | 缓冲多长时间后，提示用户切换低清晰度，默认：20 秒。                                                                                                                                |
-| waitingTimeout           |    Number     | 最大缓冲超时时间，超过这个时间会有错误提示，默认：60 秒。                                                                                                                          |
-| liveStartTime            |    String     | 直播开始时间，直播时移功能使用，格式为：“2018/01/04 12:00:00”。                                                                                                                    |
-| liveOverTime             |    String     | 直播结束时间，直播时移功能使用，格式为：“2018/01/04 12:00:00”。                                                                                                                    |
-| liveTimeShiftUrl         |    String     | 直播可用时移查询地址，详情参见直播时移。                                                                                                                                           |
-| liveShiftSource          |    String     | flv 直播地址播放时，hls 的流地址，详情参见直播时移。                                                                                                                               |
-| recreatePlayer           |   Function    | flv 直播和 hls 时移切换是，重新创建播放器方法，详情参见直播时移。                                                                                                                  |
-| diagnosisButtonVisible   |    Boolean    | 是否显示检测按钮，默认为 true。                                                                                                                                                    |
-| disableSeek              |    Boolean    | 禁用进度条的 Seek，默认为 false，仅 Flash 支持。                                                                                                                                   |
-| encryptType              |      int      | 加密类型，播放点播私有加密视频时，设置值为 1，默认值为 0。                                                                                                                         |
-| progressMarkers          |     Array     | 进度条打点内容数组，详情参见进度条打点。                                                                                                                                           |
-| vodRetry                 |      int      | 点播失败重试次数，默认 3 次                                                                                                                                                        |
-| liveRetry                |      int      | 直播播放失败重试次数，默认 5 次                                                                                                                                                    |
-
-### 3.2 播放器方法
-
-```javascript
-// 暂停播放
-this.$refs.VueAliplayerV2.pause();
+```ts
+playerRef.value?.setLiveTimeRange('2026/05/23 10:00:00', '2026/05/23 12:00:00');
 ```
 
-可以参考 [播放器接口方法](https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1085.36fc6fc57WKZ5P#h2-u64ADu653Eu5668u63A5u53E32)
+也可以在初始化时传入官方支持的直播时移配置：
 
-| 名称                   | 参数                                                                                  | 说明                                                                                                                                                                  |
-| :--------------------- | :------------------------------------------------------------------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| play                   | -                                                                                     | 播放视频。                                                                                                                                                            |
-| pause                  | -                                                                                     | 暂停视频。                                                                                                                                                            |
-| replay                 | -                                                                                     | 重播视频。                                                                                                                                                            |
-| seek                   | time                                                                                  | 跳转到某个时刻进行播放，time 的单位为秒。                                                                                                                             |
-| getCurrentTime         | -                                                                                     | 获取当前的播放时刻，返回的单位为秒。                                                                                                                                  |
-| getDuration            | -                                                                                     | 获取视频总时长，返回的单位为秒，这个需要在视频加载完成以后才可以获取到，可以在 play 事件后获取。                                                                      |
-| getVolume              | -                                                                                     | 获取当前的音量，返回值为 0-1 的实数。ios 和部分 android 会失效。                                                                                                      |
-| setVolume              | -                                                                                     | 设置音量，vol 为 0-1 的实数，ios 和部分 android 会失效。                                                                                                              |
-| loadByUrl              | url，time                                                                             | 直接播放视频 url，time 为可选值（单位秒）。目前只支持同种格式（mp4/flv/m3u8）之间切换。暂不支持直播 rtmp 流切换。                                                     |
-| replayByVidAndPlayAuth | vid：视频 id,playauth：播放凭证                                                       | 目前只支持 H5 播放器。暂不支持不同格式视频间的之间切换。暂不支持直播 rtmp 流切换。                                                                                    |
-| replayByVidAndAuthInfo | 仅 MPS 用户时使用,参数顺序为：vid、accId、accSecret、stsToken、authInfo、domainRegion | 目前只支持 H5 播放器。暂不支持不同格式视频间的之间切换。暂不支持直播 rtmp 流切换。                                                                                    |
-| setPlayerSize          | w，h                                                                                  | 设置播放器大小 w，h 可分别为 400px 像素或 60%百分比。chrome 浏览器下 flash 播放器分别不能小于 397x297。                                                               |
-| setSpeed               | speed                                                                                 | 手动设置播放的倍速，倍速播放仅 H5 支持。移动端可能会失效，比如 android 微信。倍速播放 UI 默认是开启的。如果自定义过 skinLaout 属性，需要添加 speedButton 项到数组里： |
-| >                      | >                                                                                     | {name：“speedButton”，align：“tr”，x：10，y：23}                                                                                                                      |
-| setSanpshotProperties  | width：宽度,height：高度,rate：截图质量                                               | 设置截图参数。                                                                                                                                                        |
-| requestFullScreen      | -                                                                                     | 播放器全屏，仅 H5 支持。                                                                                                                                              |
-| cancelFullScreen       | -                                                                                     | 播放器退出全屏，iOS 调用无效，仅 H5 支持。                                                                                                                            |
-| getIsFullScreen        | -                                                                                     | 获取播放器全屏状态，仅 H5 支持。                                                                                                                                      |
-| getStatus              | -                                                                                     | 获取播放器状态，包含的值：‘init’,‘ready’,‘loading’,‘play’,‘pause’,‘playing’,‘waiting’,‘error’,‘ended’                                                                 |
-| setLiveTimeRange       | 开始时间,结束时间                                                                     | 设置直播的开始结束时间，开启直播时移功能时使用。例子：player.liveShiftSerivce.setLiveTimeRange(“”，‘2018/01/04 20:00:00’)                                             |
-| setRotate              | rotate 旋转角度                                                                       | 参数为旋转角度， 正数为正时针旋转， 负数为逆时针旋转。例如: setRotate(90)。详情参见旋转和镜像。                                                                       |
-| getRotate              | -                                                                                     | 获取旋转角度。详情参见旋转和镜像。                                                                                                                                    |
-| setImage               | image：镜像类型,可选值为：horizon,vertical                                            | 设置镜像，例如: setImage(‘horizon’)。详情参见旋转和镜像。                                                                                                             |
-| dispose                | -                                                                                     | 播放器销毁                                                                                                                                                            |
-| setCover               | cover 封面地址                                                                        | 设置封面                                                                                                                                                              |
-| setProgressMarkers     | markers 打点数据集合                                                                  | 设置打点数据                                                                                                                                                          |
-| setPreviewTime         | time 试看时间                                                                         | 设置试看时间，单位为秒，详情参见试看                                                                                                                                  |
-| getPreviewTime         | -                                                                                     | 获取试看时间                                                                                                                                                          |
-| isPreview              | -                                                                                     | 是否试看                                                                                                                                                              |
-| off                    | ev:事件名[String],handle,事件回调方法[Function]                                       | 通过播放器实例的 off 方法取消绑定的方法                                                                                                                               |
+```vue
+<VueAliplayerV2
+    source="//example.com/live.m3u8"
+    :options="{
+        isLive: true,
+        liveStartTime: '2026/05/23 10:00:00',
+        liveOverTime: '2026/05/23 12:00:00'
+    }"
+/>
+```
 
-## 4.播放器事件
+### 多播放器
 
-```html
+```vue
 <template>
-  <vue-aliplayer-v2 @ready="handleReady" />
+    <VueAliplayerV2
+        v-for="item in sources"
+        :key="item"
+        :source="item"
+        :options="options"
+    />
 </template>
-<script>
-  export default {
-    methods: {
-      /**
-       * 播放器事件回调
-       */
-      handleReady(e) {
-        console.log(`ready`, e);
-      },
-    },
-  };
+
+<script setup lang="ts">
+import { reactive } from 'vue';
+
+const sources = [
+    '//player.alicdn.com/video/aliyunmedia.mp4',
+    '//yunqivedio.alicdn.com/user-upload/nXPDX8AASx.mp4'
+];
+
+const options = reactive({
+    autoplay: false,
+    width: '100%',
+    height: '300px'
+});
 </script>
 ```
 
-可以参考 [播放器事件](https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1085.36fc6fc57WKZ5P#h2-u64ADu653Eu5668u4E8Bu4EF63)
+v2 会复用相同的 SDK CSS/JS 加载 Promise，多实例挂载时不会重复插入同一份 SDK 标签。
 
-| 名称              | 说明                                                                                                                                     |
-| :---------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
-| ready             | 播放器视频初始化按钮渲染完毕。播放器 UI 初始设置需要此事件后触发，避免 UI 被初始化所覆盖。播放器提供的方法需要在此事件发生后才可以调用。 |
-| play              | 视频由暂停恢复为播放时触发。                                                                                                             |
-| pause             | 视频暂停时触发。                                                                                                                         |
-| canplay           | 能够开始播放音频/视频时发生，会多次触发，仅 H5 播放器。                                                                                  |
-| playing           | 播放中，会触发多次。                                                                                                                     |
-| ended             | 当前视频播放完毕时触发。                                                                                                                 |
-| liveStreamStop    | 直播流中断时触发。m3u8/flv/rtmp 在重试 5 次未成功后触发。提示上层流中断或需要重新加载视频。PS：m3u8 一直自动重试，不需要上层添加重试。   |
-| onM3u8Retry       | m3u8 直播流中断后重试事件，每次断流只触发一次。                                                                                          |
-| hideBar           | 控制栏自动隐藏事件。                                                                                                                     |
-| showBar           | 控制栏自动显示事件。                                                                                                                     |
-| waiting           | 数据缓冲事件。                                                                                                                           |
-| timeupdate        | 播放位置发生改变时触发，仅 H5 播放器。可通过 getCurrentTime 方法，得到当前播放时间。                                                     |
-| snapshoted        | 截图完成事件。                                                                                                                           |
-| requestFullScreen | 全屏事件，仅 H5 支持。                                                                                                                   |
-| cancelFullScreen  | 取消全屏事件，iOS 下不会触发，仅 H5 支持。                                                                                               |
-| error             | 错误事件。                                                                                                                               |
-| startSeek         | 开始拖拽，参数返回拖拽点的时间。                                                                                                         |
-| completeSeek      | 完成拖拽，参数返回拖拽点的时间。                                                                                                         |
+### 自定义组件和跑马灯
 
----
+Aliplayer 的自定义组件通常需要额外脚本。可以通过 `componentScripts` 保证扩展脚本在播放器初始化前加载。
 
-## 5. 图片展示
-
-![图片1](https://github.com/langyuxiansheng/vue-aliplayer-v2/blob/master/images/p1.png)
-![图片2](https://github.com/langyuxiansheng/vue-aliplayer-v2/blob/master/images/p2.png)
-
----
-
-## 6.二次开发 下载项目
-
-```bash
-git clone https://github.com/langyuxiansheng/vue-aliplayer-v2.git
+```vue
+<VueAliplayerV2
+    :source="source"
+    :component-scripts="['/aliplayer-components/marquee.js']"
+    :options="{
+        components: [
+            {
+                name: 'MarqueeComponent',
+                type: window.MarqueeComponent,
+                args: {
+                    text: 'vue-aliplayer-v2'
+                }
+            }
+        ]
+    }"
+/>
 ```
 
-## Project setup
+播放列表、水印、跑马灯等能力是否可用取决于你加载的 Aliplayer 自定义组件脚本。
+
+### 禁止快进
+
+```vue
+<VueAliplayerV2
+    :source="source"
+    forbid-fast-forward
+/>
+```
+
+该能力通过监听播放进度并回退异常快进行为实现，适合作为轻量业务限制。更强的防绕过需求应结合服务端鉴权、试看、加密播放等方案。
+
+### 失败重试
+
+播放器错误页属于 Aliplayer SDK 内部 UI。业务侧可以监听 `error` 后调用 `retry()` 或 `reload()` 做局部重试。
+
+```ts
+function handleError() {
+    playerRef.value?.retry();
+}
+```
+
+### 可选拦截 track 上报
+
+```vue
+<VueAliplayerV2
+    :source="source"
+    disable-tracking
+    :tracking-url-patterns="['newplayer/track', /\/logstores\//]"
+/>
+```
+
+该能力只拦截已知 URL 规则，属于 wrapper 层兜底方案。生产项目优先使用阿里云官方配置、控制台设置或合规的业务上报策略。
+
+## SSR 和 Nuxt 说明
+
+Aliplayer SDK 依赖浏览器环境中的 `window` 和 DOM。SSR 项目中请只在客户端渲染播放器，例如 Nuxt 中使用 `<ClientOnly>`：
+
+```vue
+<ClientOnly>
+    <VueAliplayerV2 :source="source" />
+</ClientOnly>
+```
+
+## TypeScript
+
+包入口导出以下类型：
+
+```ts
+import type {
+    AliplayerEventName,
+    AliplayerInstance,
+    AliplayerLicense,
+    AliplayerOptions,
+    AliplayerV2Props,
+    VueAliplayerV2Expose,
+    VueAliplayerV2Options
+} from 'vue-aliplayer-v2';
+```
+
+## 版本迁移
+
+### 从 1.x 升级到 2.x
+
+- v2 仅支持 Vue 3，不再考虑 Vue 2 向下兼容。
+- 构建工具迁移为 Vite，库产物输出为 ESM 和 UMD。
+- 全局注册改为 Vue 3 `app.use(VueAliplayerV2, options)`。
+- 组件 ref 建议使用 `ref<VueAliplayerV2Expose | null>`。
+- 默认 SDK 升级为阿里云 `imp-web-player` 2.37.0 路径。
+- 新增 `license`、`lowLatency`、`normalizeSourceUrl`、`componentScripts`、`disableTracking` 等配置。
+- 旧项目如需继续使用 Vue 2 版本，请固定安装 `vue-aliplayer-v2@1.x`。
+
+## 常见问题
+
+### 播放器没有显示
+
+先确认页面只在浏览器端渲染，并检查 `sdk-error` 事件。常见原因包括 SDK 地址被拦截、License 未配置、播放源跨域、容器高度为 0。
+
+### 新版 SDK 提示 License 问题
+
+请到阿里云控制台申请 Web 播放器 License，并通过 `license` prop 或 `options.license` 传入：
+
+```vue
+<VueAliplayerV2
+    :source="source"
+    :license="{ domain: 'example.com', key: 'your-license-key' }"
+/>
+```
+
+### URL 中有中文或空格播放失败
+
+默认 `normalizeSourceUrl = true` 会对播放源执行 `encodeURI`。如果你的业务已经完成 URL 编码，可以显式关闭：
+
+```vue
+<VueAliplayerV2
+    :source="source"
+    :normalize-source-url="false"
+/>
+```
+
+### 切换播放源时应该用 `source` 还是 `loadByUrl`
+
+普通 Vue 场景优先更新 `source`。组件会自动判断同格式和跨格式切换。命令式场景可以调用 `playerRef.value?.loadByUrl(url)`。
+
+## 本地开发
 
 ```bash
-cd vue-aliplayer-v2
-
 npm install
-```
-
-### Compiles and hot-reloads for development
-
-```bash
 npm run dev
 ```
 
-### Compiles and minifies for production
+类型检查：
+
+```bash
+npm run type-check
+```
+
+构建 demo：
 
 ```bash
 npm run build
 ```
 
-### Lints and fixes files
+构建组件库：
 
 ```bash
-npm run lint
+npm run lib
 ```
 
-## 7.缺陷 & 后期计划
+## License
 
-> 2019 年 12 月 27 日 更新优化局部引用方式
-
-> 您有功能建议,或者 bug 反馈请留言.
-
-## 8.感谢
-
----
-
-- vue-aliplayer 的作者,项目地址:https://github.com/slacrey/vue-aliplayer
-
-- Alipayer 阿里云的开源播放器 https://help.aliyun.com/document_detail/125572.html?spm=a2c4g.11186623.6.1085.36fc6fc57WKZ5P#h2-u64ADu653Eu5668u4E8Bu4EF63
-
-### Customize configuration
-
-See [Configuration Reference](https://cli.vuejs.org/config/).
-
-## 更新日志
-
-> v1.3.0 修复部分已知bug,增加forbidFastForward 属性,感谢 "william-xue"网友的功能提交.
-
-- sdk 版本更新,默认 SDK 版本由 2.9.3 更新为 2.9.20
-- 默认注释更新
-- 增加禁止用户拖拽快进的属性选项 forbidFastForward [Boolean] 默认 false
-
-> v1.2.9 修正部分默认属性, 感谢"Schean17"网友的反馈与建议.
-
-> v1.2.8 更换底层默认 sdk 版本为 2.9.3 修复 options 遇到 update loop 错误 感谢"litmonw"网友的反馈与建议.
-
-> v1.2.7 更换底层默认 sdk 版本为 2.9.1 的版本. 更新线上演示 demo 的选项
-
-> v1.2.6 优化 beforeDestroy() 部分的代码.
-
-> v1.2.5 更换默认的播放器 SDK 版本 2.8.2 => 2.9.0,2.8.2 的版本存在多个播放器同时播放直播流异常的 bug,增加了全局 SDK 版本配置,可以在 Vue.use()的时候进行配置.
-
-> v1.2.4 修复多个播放器加载,只初始化一个播放器的 bug.文档部分更新,增加了问题栏. 感谢"沙洲 ad"的反馈与建议.
-
-> v1.2.3 优化播放器的初始化代码,调整包内结构,优化局部组件的注册方式,也兼容老版本的引用方式.文档部分更新,增加了问题栏. 感谢"liangzhiyuan2015"和"fancheur"两位网友的反馈与建议.
-
-> v1.2.2 修复指定 id 情况下,播放器报错"没有为播放器指定容器",目前移除外部指定 id 的方式,所有的播放器 id 都由内部生成,不再由外部指定容器(外部指定的意义并不大),其它的说明:更新 1.2.1 后报错 Uncaught TypeError: 没有为播放器指定容器,因为源码中变更了部分代码,以及最大限度的简化代码,组件内部的根容器就只有一个 div 容器,导致以前外部指定 id 的时候,容器 id 与外部的不一致,导致抛出异常了,现在已经紧急修复了,若在使用,请更新到 v1.2.2 的版本;如果使用了外部指定 id 的方式请移除外部的 id.否则 id 会出现重复的情况., 感谢"liyoro"的反馈和建议.
-
-> v1.2.1 修复直播播放的情况下,播放器已经销毁,而后台还在继续下载资源造成卡顿的 bug,修复多个播放器只渲染 1 个的 bug, 感谢"Jonauil"和"guangming95"两位网友的反馈和建议.
-
-> v1.2.0 修复播放源(MP4/m3u8)之间切换无法正常播放的 bug,增加 options 配置项动态响应功能,优化部分播放器的逻辑, 感谢"liyoro"网友的反馈和建议.
-
-> v1.1.9 修复播放源(修复 prop:source 类型验证报错), 感谢"hugo2017"和“nullF”网友的反馈.
-
-> v1.1.8 修复播放源(增加 source 属性类型错误),修复获取播放器状态 getStatus()方法报错, 感谢"kongjigu"网友的反馈.
-
-> v1.1.7 增加动态切换播放源(增加 source 属性)功能 感谢"wikimo"和"jieruian"两位网友的反馈建议.
-
-> v1.1.6 修复部分已知 bug 和优化局部的引用方式
-
----
-
-## 其它问题
-
-1. IOS 或者其它设备无法全屏播放,或者点击全屏按钮的时候也只是显示竖屏？
-
-> 方案与问题所在:
-
-一般情况下可能是开启了强制竖屏(也就是屏幕锁定)打开后就会竖屏而不会全屏了！如下关闭就可以了：
-参考 issues: https://github.com/langyuxiansheng/vue-aliplayer-v2/issues/25
-
--开启了屏幕锁定，只要上拉控制中心，点击屏幕锁定关闭就可以了！
-
--也可能是播放器或者浏览器兼容性问题.
+[MIT](./LICENSE)
