@@ -16,7 +16,8 @@
     },
     "files": [
         "lib",
-        "README.md"
+        "README.md",
+        "README.en-US.md"
     ],
     "private": false,
     "license": "MIT",

@@ -417,43 +417,198 @@ import { computed, reactive, ref } from 'vue';
 import VueAliplayerV2, { type AliplayerLicense, type AliplayerOptions, type VueAliplayerV2Expose } from '../packages';
 import { inferSourceFormat } from '../packages/AliplayerV2/source';
 
+/**
+ * Demo 支持的播放源输入方式。
+ *
+ * - `url`：直接传入 URL，覆盖 MP4、M3U8、FLV、RTMP 等普通场景。
+ * - `vid`：使用阿里云 VOD 的 VID + PlayAuth 初始化。
+ * - `sts`：使用阿里云 VOD 的 STS 临时凭证初始化。
+ */
 type SourceMode = 'url' | 'vid' | 'sts';
+
+/**
+ * 右侧参数面板的分组值。
+ *
+ * 该类型让 tab 切换、配置区渲染和默认状态保持同步，新增面板时需要同步扩展。
+ */
 type TabValue = 'source' | 'basic' | 'live' | 'sdk' | 'skin';
+
+/**
+ * 播放器事件流中的单条日志。
+ *
+ * 日志只用于 demo 展示，不参与播放器状态机；`id` 保证 Vue 列表渲染稳定。
+ */
 type LogItem = {
     id: string;
     time: string;
     message: string;
 };
 
+/**
+ * 单实例播放器引用。
+ *
+ * 多实例模式下不绑定 ref，避免示例按钮对多个播放器同时发出指令造成歧义。
+ */
 const playerRef = ref<VueAliplayerV2Expose | null>(null);
+
+/**
+ * 是否挂载播放器组件。
+ *
+ * 用于验证组件反复创建、销毁时 SDK 实例和 DOM 容器能否正确释放。
+ */
 const show = ref(true);
+
+/**
+ * 是否进入多实例验证模式。
+ *
+ * 主要用于复现历史 issue 中多个播放器共存时容器 ID、事件绑定和实例销毁的问题。
+ */
 const isMultiple = ref(false);
+
+/**
+ * 当前打开的右侧参数面板。
+ */
 const activeTab = ref<TabValue>('source');
+
+/**
+ * 当前播放源模式。
+ */
 const sourceMode = ref<SourceMode>('url');
+
+/**
+ * URL 模式下选择的预设播放源。
+ */
 const selectedPreset = ref('//player.alicdn.com/video/aliyunmedia.mp4');
+
+/**
+ * URL 模式下输入的自定义播放源。
+ *
+ * 有值时优先级高于 `selectedPreset`，便于快速粘贴用户自己的直播或点播地址。
+ */
 const customSource = ref('');
+
+/**
+ * demo 顶部展示的播放器状态。
+ */
 const playerStatus = ref('init');
+
+/**
+ * 最近播放器事件列表。
+ */
 const logs = ref<LogItem[]>([]);
+
+/**
+ * 当前加载的 Aliplayer SDK 版本。
+ *
+ * 默认跟随阿里云官方文档当前推荐的 2.37.0；用户可在 demo 中验证旧版或新版 SDK。
+ */
 const sdkVersion = ref('2.37.0');
+
+/**
+ * 是否自动根据 source URL 后缀推断 `format`。
+ */
 const autoFormat = ref(true);
+
+/**
+ * 是否启用低延迟直播相关默认项。
+ */
 const lowLatency = ref(true);
+
+/**
+ * 是否在传给 SDK 前对播放源做安全编码。
+ */
 const normalizeSourceUrl = ref(true);
+
+/**
+ * 是否禁止快进。
+ */
 const forbidFastForward = ref(false);
+
+/**
+ * 是否拦截 SDK 的埋点请求。
+ */
 const disableTracking = ref(false);
+
+/**
+ * 每行一个自定义组件脚本地址。
+ *
+ * 组件会在 SDK 主脚本加载完成后顺序加载这些扩展脚本。
+ */
 const componentScriptsText = ref('');
+
+/**
+ * 手动指定的播放格式。
+ *
+ * 留空时交给组件根据 `autoFormat` 和 URL 自动推断。
+ */
 const manualFormat = ref('');
+
+/**
+ * FLV stash buffer 开关。
+ *
+ * `auto` 表示不覆盖 SDK 默认值，`on` 和 `off` 分别写入布尔值。
+ */
 const flvStash = ref<'auto' | 'on' | 'off'>('auto');
+
+/**
+ * FLV 首包缓冲大小，单位沿用 Aliplayer SDK。
+ */
 const stashInitialSizeForFlv = ref(128);
+
+/**
+ * RTS 插件版本号。
+ *
+ * 仅在项目需要阿里云超低延迟 RTS 直播时填写。
+ */
 const rtsVersion = ref('');
+
+/**
+ * 直播时移开始时间。
+ */
 const liveStartTime = ref('');
+
+/**
+ * 直播时移结束时间。
+ */
 const liveOverTime = ref('');
+
+/**
+ * 皮肤布局预设。
+ */
 const skinPreset = ref('center');
+
+/**
+ * 试看时长，单位为秒。
+ */
 const previewTime = ref(0);
+
+/**
+ * 进度条打点输入，使用逗号分隔秒数。
+ */
 const progressMarkersText = ref('10,30,60');
+
+/**
+ * 透传给 Aliplayer 的自定义 JSON 配置。
+ *
+ * 这里保留文本输入是为了让 demo 能覆盖未显式建表单的 SDK 参数。
+ */
 const customOptionsJson = ref('{\n  "diagnosisButtonVisible": true\n}');
+
+/**
+ * 自定义 JSON 解析失败时的错误文案。
+ */
 const customOptionsError = ref('');
+
+/**
+ * 日志递增种子。
+ *
+ * 与时间戳拼接后生成列表 key，避免同一毫秒内多条事件冲突。
+ */
 let logSeed = 0;
 
+/**
+ * 右侧参数面板定义。
+ */
 const tabs: Array<{ label: string; value: TabValue }> = [
     { label: '源', value: 'source' },
     { label: '基础', value: 'basic' },
@@ -462,18 +617,29 @@ const tabs: Array<{ label: string; value: TabValue }> = [
     { label: '皮肤', value: 'skin' }
 ];
 
+/**
+ * 播放源模式切换项。
+ */
 const sourceModes: Array<{ label: string; value: SourceMode }> = [
     { label: 'URL', value: 'url' },
     { label: 'VID', value: 'vid' },
     { label: 'STS', value: 'sts' }
 ];
 
+/**
+ * URL 模式下的演示源。
+ *
+ * 保留多个源用于验证 URL 规范化、格式推断和 reload 行为。
+ */
 const sourcePresets = [
     { label: 'MP4 演示源', value: '//player.alicdn.com/video/aliyunmedia.mp4' },
     { label: 'MP4 备用源', value: '//yunqivedio.alicdn.com/user-upload/nXPDX8AASx.mp4' },
     { label: 'M3U8 直播源', value: '//ivi.bupt.edu.cn/hls/cctv1.m3u8' }
 ];
 
+/**
+ * 多实例模式下使用的播放源列表。
+ */
 const multipleSources = [
     '//player.alicdn.com/video/aliyunmedia.mp4',
     '//yunqivedio.alicdn.com/user-upload/nXPDX8AASx.mp4',
@@ -481,6 +647,11 @@ const multipleSources = [
     '//yunqivedio.alicdn.com/user-upload/nXPDX8AASx.mp4'
 ];
 
+/**
+ * demo 可视化表单中的基础 Aliplayer 配置。
+ *
+ * 该对象会被合并进最终 `playerOptions`，与 SDK 参数名保持一致，便于直接复制。
+ */
 const baseOptions = reactive<AliplayerOptions>({
     width: '100%',
     height: '420px',
@@ -499,17 +670,28 @@ const baseOptions = reactive<AliplayerOptions>({
     cover: ''
 });
 
+/**
+ * 阿里云 Web 播放器 License 表单。
+ *
+ * 当 `domain` 和 `key` 都填写后才会注入到组件，避免空字符串覆盖全局配置。
+ */
 const licenseForm = reactive<AliplayerLicense>({
     domain: '',
     key: ''
 });
 
+/**
+ * VID + PlayAuth 初始化表单。
+ */
 const vidConfig = reactive({
     vid: '',
     playauth: '',
     authTimeout: 7200
 });
 
+/**
+ * STS 初始化表单。
+ */
 const stsConfig = reactive({
     vid: '',
     region: 'cn-shanghai',
@@ -518,13 +700,34 @@ const stsConfig = reactive({
     securityToken: ''
 });
 
+/**
+ * 当前播放源模式的展示文案。
+ */
 const sourceModeLabel = computed(() => sourceModes.find((item) => item.value === sourceMode.value)?.label || 'URL');
+
+/**
+ * 当前 URL 播放源。
+ *
+ * 非 URL 模式下返回 `null`，这样组件不会同时收到 `source` 与 VID/STS 参数。
+ */
 const currentSource = computed(() => {
     if (sourceMode.value !== 'url') return null;
     return customSource.value.trim() || selectedPreset.value;
 });
+
+/**
+ * 当前 URL 播放源的自动格式推断结果。
+ */
 const inferredFormat = computed(() => inferSourceFormat(currentSource.value));
+
+/**
+ * 自定义组件脚本列表。
+ */
 const componentScriptList = computed(() => componentScriptsText.value.split('\n').map((item) => item.trim()).filter(Boolean));
+
+/**
+ * 组件最终接收的 License 配置。
+ */
 const resolvedLicense = computed(() => {
     if (!licenseForm.domain.trim() || !licenseForm.key.trim()) return null;
     return {
@@ -533,6 +736,11 @@ const resolvedLicense = computed(() => {
     };
 });
 
+/**
+ * 根据皮肤预设生成 SDK `skinLayout`。
+ *
+ * `undefined` 表示不覆盖 SDK 默认布局，`false` 表示显式隐藏默认皮肤。
+ */
 const skinLayout = computed(() => {
     if (skinPreset.value === 'default') return undefined;
     if (skinPreset.value === 'hidden') return false;
@@ -556,6 +764,9 @@ const skinLayout = computed(() => {
     return [{ name: 'bigPlayButton', align: 'cc' }];
 });
 
+/**
+ * 将逗号分隔的秒数转换成 Aliplayer 进度条打点配置。
+ */
 const progressMarkers = computed(() => progressMarkersText.value
     .split(',')
     .map((item) => Number(item.trim()))
@@ -565,6 +776,11 @@ const progressMarkers = computed(() => progressMarkersText.value
         text: `Marker ${index + 1}`
     })));
 
+/**
+ * 解析用户输入的自定义 JSON 配置。
+ *
+ * 解析失败时返回空对象，同时把错误信息展示在 demo 表单下方，避免无效 JSON 中断渲染。
+ */
 const parsedCustomOptions = computed<Record<string, unknown>>(() => {
     customOptionsError.value = '';
     if (!customOptionsJson.value.trim()) return {};
@@ -577,6 +793,11 @@ const parsedCustomOptions = computed<Record<string, unknown>>(() => {
     }
 });
 
+/**
+ * 汇总组件当前使用的 Aliplayer options。
+ *
+ * 这里有意只写入有效值，避免空字符串或自动态字段覆盖 SDK 默认行为。
+ */
 const playerOptions = computed<AliplayerOptions>(() => {
     const options: AliplayerOptions = {
         ...baseOptions,
@@ -611,6 +832,9 @@ const playerOptions = computed<AliplayerOptions>(() => {
     return options;
 });
 
+/**
+ * 可复制的完整 demo 配置快照。
+ */
 const formattedOptions = computed(() => JSON.stringify({
     source: currentSource.value,
     options: playerOptions.value,
@@ -623,6 +847,11 @@ const formattedOptions = computed(() => JSON.stringify({
     componentScripts: componentScriptList.value
 }, null, 2));
 
+/**
+ * 追加一条事件日志。
+ *
+ * @param message - 要展示在事件流中的简短描述。
+ */
 function pushLog(message: string): void {
     const item = {
         id: `${Date.now()}-${logSeed++}`,
@@ -632,11 +861,19 @@ function pushLog(message: string): void {
     logs.value = [item, ...logs.value].slice(0, 10);
 }
 
+/**
+ * 处理播放器 ready 事件。
+ */
 function handleReady(): void {
     playerStatus.value = 'ready';
     pushLog('ready');
 }
 
+/**
+ * 处理播放进度更新。
+ *
+ * demo 只在整 15 秒附近刷新状态，减少 timeupdate 高频事件对界面的干扰。
+ */
 function handleTimeUpdate(): void {
     const current = playerRef.value?.getCurrentTime();
     if (typeof current === 'number' && Math.floor(current) % 15 === 0) {
@@ -644,36 +881,63 @@ function handleTimeUpdate(): void {
     }
 }
 
+/**
+ * 处理播放器运行时错误。
+ *
+ * @param event - SDK 透传的错误事件或错误对象。
+ */
 function handleError(event?: unknown): void {
     playerStatus.value = 'error';
     pushLog(`error ${JSON.stringify(event || {})}`);
 }
 
+/**
+ * 处理 SDK 加载失败。
+ *
+ * @param error - 组件在加载 CSS、JS 或扩展脚本时抛出的错误。
+ */
 function handleSdkError(error: Error): void {
     playerStatus.value = 'sdk-error';
     pushLog(`sdk-error ${error.message}`);
 }
 
+/**
+ * 跳转到固定时间点。
+ *
+ * demo 使用 15 秒作为确定性测试值，方便观察禁快进和 seek 行为。
+ */
 function seekTo(): void {
     playerRef.value?.seek(15);
     pushLog('seek 15s');
 }
 
+/**
+ * 请求播放器全屏。
+ */
 function requestFullScreen(): void {
     playerRef.value?.requestFullScreen();
     pushLog('fullscreen');
 }
 
+/**
+ * 读取播放器当前状态并写入事件流。
+ */
 function snapshotStatus(): void {
     playerStatus.value = playerRef.value?.getStatus() || 'unknown';
     pushLog(`status ${playerStatus.value}`);
 }
 
+/**
+ * 复制当前配置快照到剪贴板。
+ */
 function copyConfig(): void {
     void navigator.clipboard?.writeText(formattedOptions.value);
     pushLog('config copied');
 }
 
+/**
+ * 重置 demo 中所有可编辑参数。
+ */
 function resetAll(): void {
     sourceMode.value = 'url';
     selectedPreset.value = sourcePresets[0].value;
